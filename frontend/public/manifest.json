@@ -1,0 +1,16 @@
+{
+  "short_name": "TrustForge",
+  "name": "TrustForge - AI Scam & Threat Security Platform",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "type": "image/png",
+      "sizes": "192x192 512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#04101B",
+  "theme_color": "#00A4B4",
+  "display": "standalone",
+  "orientation": "portrait"
+}

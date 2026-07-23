@@ -8,9 +8,84 @@ import Auth from './pages/Auth';
 import Settings from './pages/Settings';
 import Profile from './pages/Profile';
 import { AdminPage } from './pages/Admin';
-import { Sparkles, LayoutDashboard, MessageSquare, KeyRound, LogOut, Star, User, Menu, ShieldAlert, X as CloseIcon } from 'lucide-react';
+import { Sparkles, LayoutDashboard, MessageSquare, KeyRound, LogOut, Star, User, Menu, ShieldAlert, Download, X as CloseIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+// ── PWA Install Banner Component ──────────────────────────────
+function InstallAppBanner() {
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showBanner, setShowBanner] = useState(false);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowBanner(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) {
+      // Fallback hint for iOS / browsers without beforeinstallprompt
+      alert('To install TrustForge on your device: Tap your browser Menu (or Share button) and select "Add to Home Screen".');
+      return;
+    }
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setShowBanner(false);
+    }
+    setDeferredPrompt(null);
+  };
+
+  return (
+    <AnimatePresence>
+      {(showBanner || true) && (
+        <motion.div
+          initial={{ y: 80, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: 80, opacity: 0 }}
+          transition={{ duration: 0.3 }}
+          className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:max-w-sm z-50 p-4 rounded-[20px] glass-card border border-[#00A4B4]/40 bg-[#04101B]/95 shadow-[0_10px_40px_rgba(0,0,0,0.6)] flex items-center justify-between gap-3"
+        >
+          <div className="flex items-center gap-3">
+            <img src="/logo.png" alt="TrustForge App" className="w-10 h-10 object-contain shrink-0" />
+            <div>
+              <p className="text-xs font-bold text-white font-heading">Install TrustForge App</p>
+              <p className="text-[10px] text-[#8AB4CE]">Add to Home Screen for fast offline scans & quick access</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 shrink-0">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleInstallClick}
+              className="px-3.5 py-2 rounded-[12px] bg-gradient-to-r from-[#002855] to-[#0097A7] text-white text-xs font-bold transition-all shadow-[0_4px_12px_rgba(0,151,167,0.35)] flex items-center gap-1.5 cursor-pointer"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Install</span>
+            </motion.button>
+            <button
+              onClick={() => setShowBanner(false)}
+              className="p-1.5 text-gray-400 hover:text-white rounded-lg transition"
+              aria-label="Close install prompt"
+            >
+              <CloseIcon className="w-4 h-4" />
+            </button>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
 
 // ── Navbar ────────────────────────────────────────────────────
 function Navbar({ isLoggedIn, user, onLogout }: { isLoggedIn: boolean; user: any; onLogout: () => void }) {
@@ -222,6 +297,9 @@ export default function App() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
+
+      {/* Floating PWA Install App Banner */}
+      <InstallAppBanner />
     </div>
   );
 }
