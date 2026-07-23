@@ -133,6 +133,9 @@ export default function Landing({ onScanComplete }: LandingProps) {
   });
 
   const scannerRef = useRef<HTMLDivElement>(null);
+  const storedUser = localStorage.getItem('tf_user');
+  const currentUser = storedUser ? JSON.parse(storedUser) : null;
+  const isPro = currentUser?.plan === 'pro';
 
   // Fetch Supabase capacity status and real-time scan stats on mount
   useEffect(() => {
@@ -280,9 +283,9 @@ export default function Landing({ onScanComplete }: LandingProps) {
       name: 'Pro',
       price: '₹7',
       period: 'per month',
-      tagline: isProLocked ? 'Pro upgrades temporarily locked' : 'For teams, researchers & power users',
-      color: isProLocked ? 'border-red-900/30 bg-red-950/5' : 'border-[#2563EB]/50',
-      badge: isProLocked ? '🔒 Limit Reached' : 'Most Popular',
+      tagline: isPro ? 'You have full access to all Pro features' : isProLocked ? 'Pro upgrades temporarily locked' : 'For teams, researchers & power users',
+      color: isPro ? 'border-emerald-500/50 bg-emerald-950/10' : isProLocked ? 'border-red-900/30 bg-red-950/5' : 'border-[#2563EB]/50',
+      badge: isPro ? '✓ Active Plan' : isProLocked ? '🔒 Limit Reached' : 'Most Popular',
       features: [
         { text: 'Unlimited scans', ok: true },
         { text: 'Website & Email scan', ok: true },
@@ -296,12 +299,14 @@ export default function Landing({ onScanComplete }: LandingProps) {
         { text: 'API access (1000 req/day)', ok: true },
         { text: 'Exportable PDF reports', ok: true },
       ],
-      cta: isProLocked ? 'Capacity Full' : 'Upgrade to Pro',
-      ctaStyle: isProLocked
+      cta: isPro ? 'Current Active Plan ✓' : isProLocked ? 'Capacity Full' : 'Upgrade to Pro',
+      ctaStyle: isPro
+        ? 'bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 cursor-default'
+        : isProLocked
         ? 'bg-red-950/20 border border-red-900/30 text-red-400/50 cursor-not-allowed'
         : 'bg-[#2563EB] hover:bg-blue-700 text-white shadow-[0_4px_24px_rgba(37,99,235,0.35)]',
-      onClick: handleUpgradeToPro,
-      disabled: isProLocked,
+      onClick: isPro ? () => {} : handleUpgradeToPro,
+      disabled: isPro || isProLocked,
     },
   ];
 

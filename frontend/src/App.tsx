@@ -7,7 +7,8 @@ import Community from './pages/Community';
 import Auth from './pages/Auth';
 import Settings from './pages/Settings';
 import Profile from './pages/Profile';
-import { Sparkles, LayoutDashboard, MessageSquare, KeyRound, LogOut, Star, User, Menu, X as CloseIcon } from 'lucide-react';
+import { AdminPage } from './pages/Admin';
+import { Sparkles, LayoutDashboard, MessageSquare, KeyRound, LogOut, Star, User, Menu, ShieldAlert, X as CloseIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 
@@ -69,6 +70,7 @@ function Navbar({ isLoggedIn, user, onLogout }: { isLoggedIn: boolean; user: any
             {navItem('/', 'Scan Hub', Sparkles)}
             {navItem('/dashboard', 'Dashboard', LayoutDashboard)}
             {navItem('/community', 'Community', MessageSquare)}
+            {isLoggedIn && user?.email === 'vamshi@trustforge.app' && navItem('/admin', 'Admin Portal', ShieldAlert, true)}
 
             {isLoggedIn && user?.plan === 'pro' && (
               <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-[9px] font-bold uppercase tracking-wider font-mono">
@@ -230,6 +232,7 @@ export default function App() {
             path="/settings"
             element={isLoggedIn ? <Settings /> : <Auth onLogin={handleLogin} />}
           />
+          <Route path="/admin" element={isLoggedIn ? <AdminPage /> : <Auth onLogin={handleLogin} />} />
           {/* 404 fallback */}
           <Route path="*" element={<NotFound />} />
         </Routes>
