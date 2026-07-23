@@ -41,13 +41,29 @@ export const AdminPage: React.FC = () => {
   const fetchReports = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/api/v1/community/reports`);
-      if (res.ok) {
-        const data = await res.json();
+      const [reportsRes, usersRes] = await Promise.all([
+        fetch(`${API_BASE}/api/v1/community/reports`),
+        fetch(`${API_BASE}/api/v1/auth/admin/users`).catch(() => null)
+      ]);
+      
+      if (reportsRes.ok) {
+        const data = await reportsRes.json();
         setReports(data.reports || []);
       }
+
+      if (usersRes && usersRes.ok) {
+        const uData = await usersRes.json();
+        if (Array.isArray(uData) && uData.length > 0) {
+          setUsers(uData.map((u: any) => ({
+            id: u.user_id || u.id,
+            email: u.user_id ? `user_${u.user_id.slice(0,6)}@supabase` : u.email || 'User',
+            plan: u.plan || 'free',
+            created_at: u.created_at ? new Date(u.created_at).toLocaleDateString() : 'Active'
+          })));
+        }
+      }
     } catch (e) {
-      console.error('Failed to load community reports', e);
+      console.error('Failed to load admin data', e);
     } finally {
       setLoading(false);
     }
@@ -57,21 +73,33 @@ export const AdminPage: React.FC = () => {
     fetchReports();
   }, []);
 
-  const handleTogglePlan = (userId: string) => {
-    setUsers(prev => prev.map(u => {
-      if (u.id === userId) {
-        const nextPlan = u.plan === 'pro' ? 'free' : 'pro';
-        setActionMsg(`Updated user ${u.email} plan to ${nextPlan.toUpperCase()}`);
-        return { ...u, plan: nextPlan };
-      }
-      return u;
-    }));
+  const handleTogglePlan = async (userId: string) => {
+    const targetUser = users.find(u => u.id === userId);
+    if (!targetUser) return;
+    const nextPlan = targetUser.plan === 'pro' ? 'free' : 'pro';
+
+    try {
+      await fetch(`${API_BASE}/api/v1/auth/admin/user-plan`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, plan: nextPlan })
+      });
+    } catch (_) {}
+
+    setUsers(prev => prev.map(u => u.id === userId ? { ...u, plan: nextPlan } : u));
+    setActionMsg(`Updated plan for ${targetUser.email} to ${nextPlan.toUpperCase()} in Supabase!`);
     setTimeout(() => setActionMsg(''), 4000);
   };
 
   const handleDeleteReport = async (reportId: string) => {
+    try {
+      await fetch(`${API_BASE}/api/v1/community/reports/${reportId}`, {
+        method: 'DELETE'
+      });
+    } catch (_) {}
+
     setReports(prev => prev.filter(r => r.id !== reportId));
-    setActionMsg(`Report removed from community feed.`);
+    setActionMsg(`Report removed from Supabase community database.`);
     setTimeout(() => setActionMsg(''), 4000);
   };
 

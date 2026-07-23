@@ -134,3 +134,17 @@ def get_live_stats():
         raise HTTPException(status_code=503, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Supabase error: {str(e)}")
+
+# ─── DELETE /reports/{report_id} (Admin moderation) ───────────
+@router.delete("/reports/{report_id}")
+def delete_community_report(report_id: str):
+    """Deletes a community scam report from Supabase."""
+    try:
+        sb = get_supabase()
+        res = sb.table("community_reports").delete().eq("id", report_id).execute()
+        return {"status": "success", "message": f"Report {report_id} deleted."}
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to delete report: {str(e)}")
+

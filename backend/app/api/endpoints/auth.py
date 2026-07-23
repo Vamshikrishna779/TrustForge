@@ -256,3 +256,36 @@ def get_cloud_history(authorization: str = Header(default="")):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Cloud history fetch failed: {str(e)}")
+
+# ─── ADMIN ENDPOINTS ──────────────────────────────────────────
+@router.get("/admin/users")
+def get_all_users_admin():
+    """Returns all registered users and their plans from Supabase user_plans table."""
+    try:
+        sb = get_supabase()
+        res = sb.table("user_plans").select("*").execute()
+        return res.data or []
+    except Exception:
+        # Fallback to empty if RLS or query fails
+        return []
+
+class AdminUserPlanRequest(BaseModel):
+    user_id: str
+    plan: str  # 'free' | 'pro'
+
+@router.post("/admin/user-plan")
+def update_user_plan_admin(payload: AdminUserPlanRequest):
+    """Admin override to upgrade or downgrade any user plan directly in Supabase."""
+    try:
+        sb = get_supabase()
+        res = sb.table("user_plans").upsert({
+            "user_id": payload.user_id,
+            "plan": payload.plan,
+            "plan_activated_at": "now()"
+        }, on_conflict="user_id").execute()
+        return {"status": "success", "message": f"User {payload.user_id} updated to {payload.plan}."}
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to update user plan: {str(e)}")
+
