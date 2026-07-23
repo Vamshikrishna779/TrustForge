@@ -10,7 +10,7 @@ import Profile from './pages/Profile';
 import { AdminPage } from './pages/Admin';
 import { Sparkles, LayoutDashboard, MessageSquare, KeyRound, LogOut, Star, User, Menu, ShieldAlert, Download, X as CloseIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 // ── PWA Install Banner Component ──────────────────────────────
 function InstallAppBanner() {
@@ -117,6 +117,24 @@ function InstallAppBanner() {
 function Navbar({ isLoggedIn, user, onLogout }: { isLoggedIn: boolean; user: any; onLogout: () => void }) {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const navRef = useRef<HTMLDivElement>(null);
+
+  // Auto close mobile menu when clicking / touching outside navbar
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent | TouchEvent) {
+      if (navRef.current && !navRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [isOpen]);
 
   const isActive = (path: string) => location.pathname === path || (path === '/' && location.pathname.startsWith('/report'));
 
@@ -148,7 +166,7 @@ function Navbar({ isLoggedIn, user, onLogout }: { isLoggedIn: boolean; user: any
   };
 
   return (
-    <nav className="border-b border-[#00A4B4]/20 bg-[#04101B]/85 backdrop-blur-md sticky top-0 z-50 transition-all duration-200">
+    <nav ref={navRef} className="border-b border-[#00A4B4]/20 bg-[#04101B]/85 backdrop-blur-md sticky top-0 z-50 transition-all duration-200">
       <div className="max-w-6xl mx-auto px-4 py-3 sm:py-4">
         <div className="flex justify-between items-center w-full">
           <Link to="/" className="flex items-center gap-2 cursor-pointer no-underline" onClick={() => setIsOpen(false)}>

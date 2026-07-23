@@ -249,12 +249,12 @@ export default function Report({ reportId: propReportId, onBack: propOnBack }: R
             </div>
 
             {/* Circular Gauge */}
-            <div className="relative flex items-center justify-center w-36 h-36 sm:w-40 sm:h-40 mx-auto">
-              <svg className="w-full h-full transform -rotate-90">
-                <circle cx="80" cy="80" r="66" stroke="#09090b" strokeWidth="8" fill="transparent" />
+            <div className="relative flex items-center justify-center w-36 h-36 sm:w-40 sm:h-40 mx-auto overflow-visible">
+              <svg viewBox="0 0 160 160" className="w-full h-full transform -rotate-90 overflow-visible">
+                <circle cx="80" cy="80" r="66" stroke="#09090b" strokeWidth="10" fill="transparent" />
                 <motion.circle
                   cx="80" cy="80" r="66"
-                  stroke="currentColor" strokeWidth="8" fill="transparent"
+                  stroke="currentColor" strokeWidth="10" fill="transparent"
                   strokeDasharray={414}
                   initial={{ strokeDashoffset: 414 }}
                   animate={{ strokeDashoffset: 414 - (414 * score) / 100 }}

@@ -203,18 +203,30 @@ export default function Profile({ user, onLogout }: ProfileProps) {
           <div className={`p-4 rounded-[16px] border ${isPro ? 'bg-yellow-500/5 border-yellow-500/20' : 'bg-[#2563EB]/5 border-[#2563EB]/20'}`}>
             <div className="flex items-center justify-between mb-3">
               <div>
-                <p className="font-extrabold text-white text-sm">{isPro ? '⭐ Pro Plan' : '🆓 Free Plan'}</p>
+                <p className="font-extrabold text-white text-sm">{isPro ? '⭐ Pro Plan' : '🆓 Free Tier'}</p>
                 <p className="text-[10px] text-[#9E9EA4] mt-0.5">
-                  {isPro ? 'Cloud sync + unlimited history' : 'Local storage only · up to 50 scans'}
+                  {isPro ? 'Cloud sync + priority AI analysis' : 'Local storage only · basic features'}
                 </p>
               </div>
               <span className={`text-[9px] px-2 py-0.5 rounded-[8px] font-bold border ${isPro ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' : 'bg-[#2563EB]/10 text-[#60A5FA] border-[#2563EB]/20'}`}>
-                {isPro ? 'ACTIVE' : 'FREE'}
+                {isPro ? 'ACTIVE PRO' : 'FREE USER'}
               </span>
             </div>
 
+            {/* Plan status & expiration */}
+            <div className="pt-2 mt-2 border-t border-white/[0.05] text-[11px] space-y-1">
+              <div className="flex justify-between text-[#8AB4CE]">
+                <span>Status:</span>
+                <span className="font-bold text-white">{isPro ? 'Active Monthly Subscription' : 'Free Account'}</span>
+              </div>
+              <div className="flex justify-between text-[#8AB4CE]">
+                <span>Expires / Renews:</span>
+                <span className="font-mono text-[#00A4B4]">{isPro ? 'Monthly Auto-Renew' : 'Never (Lifetime Free)'}</span>
+              </div>
+            </div>
+
             {!isPro && (
-              <>
+              <div className="mt-3">
                 {upgradeMsg && <p className="text-xs text-[#16A34A] bg-green-950/20 border border-green-900/30 p-2 rounded-[10px] mb-2">{upgradeMsg}</p>}
                 {upgradeError && <p className="text-xs text-[#F87171] bg-red-950/20 border border-red-900/30 p-2 rounded-[10px] mb-2">{upgradeError}</p>}
                 <motion.button
@@ -222,13 +234,13 @@ export default function Profile({ user, onLogout }: ProfileProps) {
                   whileTap={{ scale: upgradeLoading ? 1 : 0.98 }}
                   onClick={handleUpgrade}
                   disabled={upgradeLoading}
-                  className="w-full py-2 rounded-[12px] bg-gradient-to-r from-[#2563EB] to-[#7C3AED] text-white text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-[0_4px_16px_rgba(37,99,235,0.25)] disabled:opacity-60"
+                  className="w-full py-2 rounded-[12px] bg-gradient-to-r from-[#002855] to-[#0097A7] hover:from-[#003366] hover:to-[#00B4D8] text-white text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-[0_4px_16px_rgba(0,151,167,0.25)] disabled:opacity-60"
                 >
                   {upgradeLoading
                     ? <><span className="animate-spin">⏳</span> Processing...</>
                     : <><Zap className="w-3.5 h-3.5" /> Upgrade to Pro · ₹7/mo</>}
                 </motion.button>
-              </>
+              </div>
             )}
           </div>
 
@@ -264,12 +276,12 @@ export default function Profile({ user, onLogout }: ProfileProps) {
 
           {/* Avg score ring */}
           <div className="flex flex-col items-center py-2">
-            <div className="relative w-28 h-28">
-              <svg className="w-full h-full -rotate-90">
-                <circle cx="56" cy="56" r="48" stroke="#09090b" strokeWidth="8" fill="transparent" />
+            <div className="relative w-28 h-28 overflow-visible">
+              <svg viewBox="0 0 112 112" className="w-full h-full -rotate-90 overflow-visible">
+                <circle cx="56" cy="56" r="48" stroke="#09090b" strokeWidth="9" fill="transparent" />
                 <motion.circle
                   cx="56" cy="56" r="48"
-                  stroke={scoreColor} strokeWidth="8" fill="transparent"
+                  stroke={scoreColor} strokeWidth="9" fill="transparent"
                   strokeDasharray={301.6}
                   initial={{ strokeDashoffset: 301.6 }}
                   animate={{ strokeDashoffset: totalScans ? 301.6 - (301.6 * avgScore) / 100 : 301.6 }}
