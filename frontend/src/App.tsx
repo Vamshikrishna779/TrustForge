@@ -232,7 +232,10 @@ export default function App() {
             path="/settings"
             element={isLoggedIn ? <Settings /> : <Auth onLogin={handleLogin} />}
           />
-          <Route path="/admin" element={isLoggedIn ? <AdminPage /> : <Auth onLogin={handleLogin} />} />
+          <Route 
+            path="/admin" 
+            element={isLoggedIn && user?.email === 'vamshi@trustforge.app' ? <AdminPage /> : <NotFound />} 
+          />
           {/* 404 fallback */}
           <Route path="*" element={<NotFound />} />
         </Routes>

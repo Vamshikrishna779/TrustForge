@@ -31,12 +31,8 @@ export const AdminPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [actionMsg, setActionMsg] = useState('');
 
-  // Sample managed user list (in real production, fetched from backend API)
-  const [users, setUsers] = useState<SystemUser[]>([
-    { id: '1', email: 'vamshi@trustforge.app', plan: 'pro', created_at: '2026-07-20' },
-    { id: '2', email: 'user1@gmail.com', plan: 'free', created_at: '2026-07-22' },
-    { id: '3', email: 'recruiter@techjobs.in', plan: 'free', created_at: '2026-07-23' },
-  ]);
+  // Live managed user list from Supabase backend
+  const [users, setUsers] = useState<SystemUser[]>([]);
 
   const fetchReports = async () => {
     setLoading(true);
