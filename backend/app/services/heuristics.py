@@ -13,6 +13,16 @@ def check_domain_age(domain: str) -> dict:
     """
     Queries the WHOIS server to calculate the age of a domain.
     """
+    dev_platforms = ["pages.dev", "onrender.com", "vercel.app", "netlify.app", "github.io", "hf.space"]
+    for platform in dev_platforms:
+        if domain.endswith(platform):
+            return {
+                "age_days": 365,
+                "status": "dev_platform",
+                "platform": platform,
+                "note": f"Hosted on free developer platform ({platform}). Used by developers and startups."
+            }
+
     try:
         w = whois.whois(domain)
         creation_date = w.creation_date
