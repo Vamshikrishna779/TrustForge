@@ -27,18 +27,29 @@ export default function Profile({ user, onLogout }: ProfileProps) {
   const [history, setHistory] = useState<ScanRecord[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
 
+  const [profileData, setProfileData] = useState<any>(null);
+
   useEffect(() => {
-    const fetchHistory = async () => {
+    const fetchHistoryAndProfile = async () => {
+      const token = localStorage.getItem('tf_token');
       try {
-        const res = await fetch(`${API_BASE}/api/v1/scan/history`);
-        if (res.ok) {
-          const data = await res.json();
+        const [resHist, resProf] = await Promise.all([
+          fetch(`${API_BASE}/api/v1/scan/history`),
+          token ? fetch(`${API_BASE}/api/v1/auth/profile`, { headers: { Authorization: `Bearer ${token}` } }) : null
+        ]);
+
+        if (resHist.ok) {
+          const data = await resHist.json();
           setHistory(data);
+        }
+        if (resProf && resProf.ok) {
+          const prof = await resProf.json();
+          setProfileData(prof);
         }
       } catch (_) {}
       finally { setLoadingHistory(false); }
     };
-    fetchHistory();
+    fetchHistoryAndProfile();
   }, []);
 
   const [upgradeLoading, setUpgradeLoading] = useState(false);
@@ -64,10 +75,26 @@ export default function Profile({ user, onLogout }: ProfileProps) {
       }
     );
   };
-  const displayName = user?.display_name || user?.email?.split('@')[0] || 'User';
-  const email = user?.email || '—';
-  const plan = user?.plan || 'free';
+  const displayName = profileData?.display_name || user?.display_name || user?.email?.split('@')[0] || 'User';
+  const email = profileData?.email || user?.email || '—';
+  const plan = profileData?.plan || user?.plan || 'free';
   const isPro = plan === 'pro';
+
+  // Calculate dynamic days remaining for Pro subscription (30-day billing cycle)
+  const getDaysRemaining = () => {
+    if (!isPro) return 'Unlimited Free Access';
+    const activatedAtStr = profileData?.plan_activated_at || user?.plan_activated_at;
+    if (!activatedAtStr) return '30 Days Left';
+    
+    const activatedAt = new Date(activatedAtStr).getTime();
+    const expiresAt = activatedAt + (30 * 24 * 60 * 60 * 1000); // 30 days in ms
+    const diffMs = expiresAt - Date.now();
+    const daysLeft = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
+    
+    return daysLeft > 0 ? `${daysLeft} Days Left` : 'Expiring Today';
+  };
+
+  const daysRemainingText = getDaysRemaining();
 
   // Derived stats from history
   const totalScans = history.length;
@@ -205,7 +232,7 @@ export default function Profile({ user, onLogout }: ProfileProps) {
               <div>
                 <p className="font-extrabold text-white text-sm">{isPro ? '⭐ Pro Plan' : '🆓 Free Plan'}</p>
                 <p className="text-xs text-[#8AB4CE] mt-1 font-mono">
-                  {isPro ? '30 Days Left' : 'Unlimited Free Access'}
+                  {daysRemainingText}
                 </p>
               </div>
               <span className={`text-[10px] px-2.5 py-1 rounded-[8px] font-bold border font-mono ${isPro ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-[#00A4B4]/20 text-[#00A4B4] border-[#00A4B4]/30'}`}>
