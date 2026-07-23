@@ -1,168 +1,156 @@
-﻿# TrustForge — Complete Deployment & Local Setup Guide
+# TrustForge — Complete Deployment & Local Setup Guide
 
-> Follow each phase in order. Everything is FREE. No credit card needed.
-
----
-
-## Live Production Architecture
-
-`
-Frontend  → Cloudflare Pages   → https://trustforge-app.pages.dev
-Backend   → Render.com         → https://trustforge-backend-nz74.onrender.com
-Keep-Alive→ UptimeRobot        → pings backend every 5 min (prevents cold starts)
-Database  → Supabase           → https://bgphyzwxmzcwtahaeuje.supabase.co
-Payments  → Razorpay           → Test mode configured (Live ready)
-GitHub    → Source Control     → https://github.com/Vamshikrishna779/TrustForge
-`
+> Comprehensive architecture, local setup, production deployment, keep-alive configuration, and maintenance instructions for TrustForge.
 
 ---
 
-## Accounts Used (All FREE, No Credit Card)
+## Live Production Architecture & URLs
 
-| Site | Purpose | Link |
-|---|---|---|
-| GitHub | Host source code for Render | https://github.com |
-| Render | Python FastAPI Backend hosting | https://render.com |
-| Cloudflare | React Vite Frontend hosting | https://dash.cloudflare.com |
-| UptimeRobot | Backend 24/7 keep-alive monitor | https://uptimerobot.com |
-| Supabase | Database & Auth platform | https://supabase.com |
-| Razorpay | Payment gateway | https://dashboard.razorpay.com |
+| Component | Platform / Host | Production URL / Endpoint | Details |
+|---|---|---|---|
+| **Web Frontend (PWA)** | Cloudflare Pages | [https://trustforge-app.pages.dev](https://trustforge-app.pages.dev) | Vite React SPA + PWA Manifest |
+| **Backend API** | Render.com | [https://trustforge-backend-nz74.onrender.com](https://trustforge-backend-nz74.onrender.com) | FastAPI (Python 3.11) |
+| **API Docs (Swagger)** | Render.com | [https://trustforge-backend-nz74.onrender.com/docs](https://trustforge-backend-nz74.onrender.com/docs) | OpenAPI interactive documentation |
+| **Backend Health Check** | Render.com | [https://trustforge-backend-nz74.onrender.com/health](https://trustforge-backend-nz74.onrender.com/health) | Keep-alive monitoring endpoint |
+| **Database & Auth** | Supabase | `https://bgphyzwxmzcwtahaeuje.supabase.co` | PostgreSQL + Supabase Auth |
+| **24/7 Keep-Alive** | UptimeRobot | Pings `/health` every 5 minutes | Prevents Render cold-starts |
+| **Source Control** | GitHub | [https://github.com/Vamshikrishna779/TrustForge](https://github.com/Vamshikrishna779/TrustForge) | Production main branch |
+| **Admin Portal** | Web App | [https://trustforge-app.pages.dev/admin](https://trustforge-app.pages.dev/admin) | Exclusive to `vamshikrishna9608@gmail.com` |
+
+---
+
+## Accounts & Free Services Matrix
+
+| Service | Role | Dashboard Link | Pricing Tier |
+|---|---|---|---|
+| **GitHub** | Code Repository & Auto-Deploy Trigger | https://github.com | Free |
+| **Render** | Python FastAPI Backend Hosting | https://dashboard.render.com | Free |
+| **Cloudflare Pages** | React Vite Single-Page Web App | https://dash.cloudflare.com | Free |
+| **Supabase** | Cloud Database & User Auth | https://supabase.com | Free |
+| **UptimeRobot** | 24/7 Keep-Alive Monitor | https://uptimerobot.com | Free |
+| **Razorpay** | Pro Plan Payment Gateway (₹7/mo) | https://dashboard.razorpay.com | Free Test / Standard |
+
+---
+
+## Brand & Design System Specifications
+
+- **Logo Palette**:
+  - **Electric Teal**: `#00A4B4` (Gradient accents: `#0097A7` to `#00B4D8`)
+  - **Deep Navy**: `#002855` (Card & container backdrops: `#04101B` / `#0A2034`)
+  - **Status Colors**: Safe (`#10B981`), Warning (`#F59E0B`), Threat (`#EF4444`)
+- **Typography**: Inter (sans), Outfit (headings), JetBrains Mono (monospaced numbers & tags)
+- **Theme**: Premium Glassmorphism Dark Mode with 60 FPS GPU-accelerated background animations.
 
 ---
 
 ## LOCAL DEVELOPMENT SETUP (Run App Locally on Windows)
 
-### 1. Run Backend Locally
+### 1. Run Backend Server Locally
 
-`powershell
+```powershell
 # Open Terminal 1
 cd C:\TrustForge\backend
 
-# Install Python requirements
+# Install Python 3.11 requirements
 pip install -r requirements.txt
 
 # Start FastAPI dev server
 uvicorn main:app --reload --port 8000
-`
-> Local Backend API: http://localhost:8000  
-> Local API Docs: http://localhost:8000/docs
+```
+> **Local API Endpoint**: `http://localhost:8000`  
+> **Local Swagger Docs**: `http://localhost:8000/docs`
 
 ---
 
-### 2. Run Frontend Locally
+### 2. Run Frontend Web App Locally
 
-`powershell
+```powershell
 # Open Terminal 2
 cd C:\TrustForge\frontend
 
-# Install dependencies (if not done)
+# Install dependencies (if needed)
 npm install
 
 # Start Vite dev server
 npm run dev
-`
-> Local Web App: http://localhost:5173
+```
+> **Local Web App**: `http://localhost:5173`
 
 ---
 
-## PHASE 0 — Database & Supabase Verification
+## PRODUCTION DEPLOYMENT STEPS
 
-Run this in your **Supabase SQL Editor** to ensure Razorpay support:
+### Phase 1 — Backend Deployment (Render)
 
-`sql
-ALTER TABLE user_plans
-  ADD COLUMN IF NOT EXISTS razorpay_payment_id TEXT,
-  ADD COLUMN IF NOT EXISTS razorpay_order_id TEXT;
-`
-
----
-
-## PHASE 1 — GitHub Source Push
-
-`powershell
-cd C:\TrustForge
-git add .
-git commit -m "Update application"
-git push origin main
-`
-
----
-
-## PHASE 2 — Render Backend Setup
-
-1. Log in to [Render Dashboard](https://dashboard.render.com).
-2. Connected Web Service: 	rustforge-backend
-3. Repository: Vamshikrishna779/TrustForge
-4. Configurations:
-   - **Root Directory**: ackend
-   - **Runtime**: Python 3
-   - **Build Command**: pip install -r requirements.txt
-   - **Start Command**: uvicorn main:app --host 0.0.0.0 --port 
-   - **Plan**: Free
+1. Log into [Render Dashboard](https://dashboard.render.com).
+2. Connected Web Service: `trustforge-backend`
+3. Repository: `Vamshikrishna779/TrustForge`
+4. Configuration Settings:
+   - **Root Directory**: `backend`
+   - **Runtime**: `Python 3` (3.11.4 locked via `.python-version` & `runtime.txt`)
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+   - **Plan**: `Free`
 5. **Environment Variables**:
-   - GEMINI_API_KEY: *(Your Gemini API key)*
-   - SUPABASE_URL: https://bgphyzwxmzcwtahaeuje.supabase.co
-   - SUPABASE_KEY: *(Your Supabase anon key)*
-   - RAZORPAY_KEY_ID: zp_test_XXXXXXXXXXXXXXXX
-   - RAZORPAY_KEY_SECRET: *(Your Razorpay key secret)*
-   - DATABASE_URL: sqlite:///./trustforge.db
-
-> **Backend URL**: https://trustforge-backend-nz74.onrender.com
+   - `GEMINI_API_KEY`: *(Your Google Gemini API Key)*
+   - `SUPABASE_URL`: `https://bgphyzwxmzcwtahaeuje.supabase.co`
+   - `SUPABASE_KEY`: *(Your Supabase anon key)*
+   - `RAZORPAY_KEY_ID`: `rzp_test_...`
+   - `RAZORPAY_KEY_SECRET`: *(Your Razorpay Key Secret)*
+   - `DATABASE_URL`: `sqlite:///./trustforge.db`
 
 ---
 
-## PHASE 3 — Cloudflare Pages Frontend Deployment
+### Phase 2 — Frontend Deployment (Cloudflare Pages)
 
-`powershell
-# 1. Build frontend dist
+```powershell
+# Build production bundle and deploy
 cd C:\TrustForge\frontend
 npm run build
-
-# 2. Deploy to Cloudflare Pages project
 wrangler pages deploy dist --project-name trustforge-app
-`
-
-> **Live Frontend URL**: https://trustforge-app.pages.dev
+```
 
 ---
 
-## PHASE 4 — Prevent Backend Sleep (UptimeRobot)
+### Phase 3 — Backend 24/7 Keep-Alive (UptimeRobot)
 
-1. Log in to [UptimeRobot Dashboard](https://uptimerobot.com).
-2. Add New Monitor:
-   - **Type**: HTTP(s)
-   - **Name**: TrustForge Backend
-   - **URL**: https://trustforge-backend-nz74.onrender.com/
-   - **Interval**: Every 5 minutes
-3. Save monitor. This prevents Render from going into 50-second cold starts.
+To prevent Render free tier cold-starts (30-50 sec delays):
+
+1. Log into [UptimeRobot Dashboard](https://uptimerobot.com).
+2. Click **`+ Add New Monitor`**:
+   - **Monitor Type**: `HTTP(s)`
+   - **Friendly Name**: `TrustForge Backend Health`
+   - **URL**: `https://trustforge-backend-nz74.onrender.com/health`
+   - **Monitoring Interval**: `5 minutes`
+3. Click **`Create Monitor`**.
 
 ---
 
-## PHASE 5 — Future Code Maintenance & Updates
+## FUTURE MAINTENANCE & WORKFLOW
 
-### To update Backend & Logic:
-`powershell
+### To Push Backend Updates (Automatic Deploy on Render):
+```powershell
 cd C:\TrustForge
 git add .
-git commit -m "Your update description"
+git commit -m "fix: update backend logic"
 git push origin main
-`
-*(Render will automatically detect the push and redeploy the backend)*
+```
+*(Render will automatically detect the push and build the backend)*
 
-### To update Frontend UI:
-`powershell
+### To Deploy Frontend UI Updates (Cloudflare Pages):
+```powershell
 cd C:\TrustForge\frontend
 npm run build
 wrangler pages deploy dist --project-name trustforge-app
-`
+```
 
 ---
 
-## Summary of URLs
+## Key App Features Verified & Active
 
-- **Live Application**: [https://trustforge-app.pages.dev](https://trustforge-app.pages.dev)
-- **Live API Endpoint**: [https://trustforge-backend-nz74.onrender.com](https://trustforge-backend-nz74.onrender.com)
-- **Interactive API Docs (Swagger)**: [https://trustforge-backend-nz74.onrender.com/docs](https://trustforge-backend-nz74.onrender.com/docs)
-- **Local Dev App**: [http://localhost:5173](http://localhost:5173)
-- **Local Dev API Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
-- **GitHub Repository**: [https://github.com/Vamshikrishna779/TrustForge](https://github.com/Vamshikrishna779/TrustForge)
+- ✅ **5 Verification Scanners**: Website URLs, Recruiter Emails, Documents (PDF/PNG/JPEG), WhatsApp/SMS Text, and Placement Guarantee Academies.
+- ✅ **Security Dashboard**: Live scan history with category filters (`ALL`, `WEBSITE`, `EMAIL`, `DOCUMENT`, `TEXT`, `TRAINING`) and individual **Delete 🗑️** options.
+- ✅ **User Profile**: Real-time stats calculation (Total Scans, Threats Flagged, Safe Passed, Avg Trust Score ring).
+- ✅ **PWA Support**: Installable app support (`manifest.json` + `theme-color`) with auto-closing 10s install banner.
+- ✅ **Admin Portal**: Accessible strictly to `vamshikrishna9608@gmail.com` with mobile-responsive horizontal scroll user management tables.
+- ✅ **Clean Export PDF**: Professional A4 print document layout formatting.
