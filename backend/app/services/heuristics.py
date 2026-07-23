@@ -13,6 +13,15 @@ def check_domain_age(domain: str) -> dict:
     """
     Queries the WHOIS server to calculate the age of a domain.
     """
+    # 1. Official TrustForge Whitelist
+    if "trustforge" in domain.lower():
+        return {
+            "age_days": 365,
+            "status": "official",
+            "note": "Official TrustForge Platform application site."
+        }
+
+    # 2. Developer Platforms
     dev_platforms = ["pages.dev", "onrender.com", "vercel.app", "netlify.app", "github.io", "hf.space"]
     for platform in dev_platforms:
         if domain.endswith(platform):

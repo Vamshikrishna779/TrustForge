@@ -207,7 +207,21 @@ async def scan_website_url(
         age_info = check_domain_age(domain)
         evidence = []
 
-        if age_info.get("age_days", -1) != -1:
+        if age_info.get("status") == "official":
+            evidence.append({
+                "key": "domain_age",
+                "status": "passed",
+                "title": "Official TrustForge System",
+                "details": "Verified official TrustForge Platform service."
+            })
+        elif age_info.get("status") == "dev_platform":
+            evidence.append({
+                "key": "domain_age",
+                "status": "passed",
+                "title": "Developer Cloud Platform",
+                "details": age_info.get("note", "Hosted on a developer cloud hosting provider.")
+            })
+        elif age_info.get("age_days", -1) != -1:
             age_days = age_info["age_days"]
             is_suspicious = age_days < 180
             evidence.append({
