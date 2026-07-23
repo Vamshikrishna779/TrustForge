@@ -83,6 +83,18 @@ export const AdminPage: React.FC = () => {
     } catch (_) {}
 
     setUsers(prev => prev.map(u => u.id === userId ? { ...u, plan: nextPlan } : u));
+    
+    // If the admin modified their own active session, update localStorage live
+    const currentUserStored = localStorage.getItem('tf_user');
+    if (currentUserStored) {
+      const parsedUser = JSON.parse(currentUserStored);
+      if (parsedUser.id === userId || parsedUser.user_id === userId) {
+        parsedUser.plan = nextPlan;
+        localStorage.setItem('tf_user', JSON.stringify(parsedUser));
+        window.location.reload(); // Refresh session immediately
+      }
+    }
+
     setActionMsg(`Updated plan for ${targetUser.email} to ${nextPlan.toUpperCase()} in Supabase!`);
     setTimeout(() => setActionMsg(''), 4000);
   };

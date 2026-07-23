@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Mail, Lock, Sparkles, Cloud, Key, BookmarkCheck, ArrowRight, RefreshCw, AlertCircle, Star, CheckCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -19,6 +19,11 @@ export default function Auth({ onLogin }: AuthProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  // Scroll to top when opening Auth screen on mobile
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
