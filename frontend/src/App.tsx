@@ -47,15 +47,15 @@ function Navbar({ isLoggedIn, user, onLogout }: { isLoggedIn: boolean; user: any
         <motion.div
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.97 }}
-          className={`flex items-center gap-2 py-2 px-3 rounded-[12px] text-xs font-semibold cursor-pointer transition-all ${
-            active
-              ? 'bg-[#2563EB] text-white shadow-[0_4px_12px_rgba(37,99,235,0.25)]'
-              : highlight
-              ? 'text-[#60A5FA] bg-[#2563EB]/10 border border-[#2563EB]/20 hover:bg-[#2563EB]/20'
-              : 'text-[#C8C8CC] hover:text-white hover:bg-white/[0.04]'
+          className={`flex items-center justify-center sm:justify-start gap-1.5 py-2 px-3.5 rounded-[14px] text-xs font-semibold transition-all cursor-pointer ${
+            highlight
+              ? 'bg-gradient-to-r from-[#002855] to-[#0097A7] text-white shadow-[0_4px_16px_rgba(0,151,167,0.35)] border border-[#00A4B4]/40 font-bold'
+              : active
+              ? 'bg-gradient-to-r from-[#0097A7] to-[#00B4D8] text-white shadow-[0_4px_16px_rgba(0,180,216,0.35)] font-extrabold'
+              : 'text-gray-300 hover:text-white hover:bg-white/[0.06] border border-transparent'
           }`}
         >
-          <Icon className="w-3.5 h-3.5" />
+          <Icon className={`w-3.5 h-3.5 ${active ? 'text-white' : 'text-gray-400'}`} />
           <span>{label}</span>
         </motion.div>
       </Link>
@@ -63,13 +63,13 @@ function Navbar({ isLoggedIn, user, onLogout }: { isLoggedIn: boolean; user: any
   };
 
   return (
-    <nav className="border-b border-[#27272A] bg-[#09090B]/85 backdrop-blur-md sticky top-0 z-50 transition-all duration-200">
+    <nav className="border-b border-[#00A4B4]/20 bg-[#04101B]/85 backdrop-blur-md sticky top-0 z-50 transition-all duration-200">
       <div className="max-w-6xl mx-auto px-4 py-3 sm:py-4">
         <div className="flex justify-between items-center w-full">
           <Link to="/" className="flex items-center gap-2 cursor-pointer no-underline" onClick={() => setIsOpen(false)}>
             <img src="/logo.png" alt="TrustForge Logo" className="w-8 h-8 object-contain" />
             <span className="font-heading font-extrabold text-xl tracking-tight text-white">
-              TrustForge
+              Trust<span className="text-[#00A4B4]">Forge</span>
             </span>
           </Link>
 
