@@ -1,16 +1,25 @@
 {
   "short_name": "TrustForge",
-  "name": "TrustForge - AI Scam & Threat Security Platform",
+  "name": "TrustForge - AI Threat Security Platform",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#04101B",
+  "theme_color": "#00A4B4",
   "icons": [
     {
       "src": "/logo.png",
+      "sizes": "192x192",
       "type": "image/png",
-      "sizes": "192x192 512x512"
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
-  ],
-  "start_url": "/",
-  "background_color": "#04101B",
-  "theme_color": "#00A4B4",
-  "display": "standalone",
-  "orientation": "portrait"
+  ]
 }
