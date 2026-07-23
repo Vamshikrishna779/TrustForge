@@ -15,74 +15,100 @@ import { useState, useEffect } from 'react';
 // ── PWA Install Banner Component ──────────────────────────────
 function InstallAppBanner() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-  const [showBanner, setShowBanner] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
+    // 1. If running as standalone app (installed) or navigator.standalone, DO NOT SHOW AT ALL
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
+    if (isStandalone || localStorage.getItem('tf_app_installed') === 'true') {
+      setIsInstalled(true);
+      return;
+    }
+
     const handleBeforeInstallPrompt = (e: any) => {
       e.preventDefault();
       setDeferredPrompt(e);
-      setShowBanner(true);
+      setIsVisible(true);
+    };
+
+    const handleAppInstalled = () => {
+      setIsInstalled(true);
+      setIsVisible(false);
+      localStorage.setItem('tf_app_installed', 'true');
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    // Auto-close banner completely after 10 seconds if not installed
+    const timer = setTimeout(() => {
+      setIsVisible(false);
+    }, 10000);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+      clearTimeout(timer);
     };
   }, []);
 
+  // DO NOT SHOW AT ALL IF INSTALLED OR TIMED OUT
+  if (isInstalled || !isVisible) return null;
+
   const handleInstallClick = async () => {
     if (!deferredPrompt) {
-      // Fallback hint for iOS / browsers without beforeinstallprompt
-      alert('To install TrustForge on your device: Tap your browser Menu (or Share button) and select "Add to Home Screen".');
+      alert('To install TrustForge: Tap your browser Menu (or Share button) and select "Add to Home Screen".');
+      setIsVisible(false);
       return;
     }
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
     if (outcome === 'accepted') {
-      setShowBanner(false);
+      setIsInstalled(true);
+      localStorage.setItem('tf_app_installed', 'true');
     }
+    setIsVisible(false);
     setDeferredPrompt(null);
   };
 
   return (
     <AnimatePresence>
-      {(showBanner || true) && (
-        <motion.div
-          initial={{ y: 80, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 80, opacity: 0 }}
-          transition={{ duration: 0.3 }}
-          className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:max-w-sm z-50 p-4 rounded-[20px] glass-card border border-[#00A4B4]/40 bg-[#04101B]/95 shadow-[0_10px_40px_rgba(0,0,0,0.6)] flex items-center justify-between gap-3"
-        >
-          <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="TrustForge App" className="w-10 h-10 object-contain shrink-0" />
-            <div>
-              <p className="text-xs font-bold text-white font-heading">Install TrustForge App</p>
-              <p className="text-[10px] text-[#8AB4CE]">Add to Home Screen for fast offline scans & quick access</p>
-            </div>
+      <motion.div
+        key="banner"
+        initial={{ y: 80, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: 80, opacity: 0 }}
+        transition={{ duration: 0.3 }}
+        className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:max-w-sm z-50 p-4 rounded-[20px] glass-card border border-[#00A4B4]/40 bg-[#04101B]/95 shadow-[0_10px_40px_rgba(0,0,0,0.6)] flex items-center justify-between gap-3"
+      >
+        <div className="flex items-center gap-3">
+          <img src="/logo.png" alt="TrustForge App" className="w-10 h-10 object-contain shrink-0" />
+          <div>
+            <p className="text-xs font-bold text-white font-heading">Install TrustForge App</p>
+            <p className="text-[10px] text-[#8AB4CE]">Add to Home Screen for fast offline scans</p>
           </div>
+        </div>
 
-          <div className="flex items-center gap-1.5 shrink-0">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleInstallClick}
-              className="px-3.5 py-2 rounded-[12px] bg-gradient-to-r from-[#002855] to-[#0097A7] text-white text-xs font-bold transition-all shadow-[0_4px_12px_rgba(0,151,167,0.35)] flex items-center gap-1.5 cursor-pointer"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span>Install</span>
-            </motion.button>
-            <button
-              onClick={() => setShowBanner(false)}
-              className="p-1.5 text-gray-400 hover:text-white rounded-lg transition"
-              aria-label="Close install prompt"
-            >
-              <CloseIcon className="w-4 h-4" />
-            </button>
-          </div>
-        </motion.div>
-      )}
+        <div className="flex items-center gap-1.5 shrink-0">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleInstallClick}
+            className="px-3.5 py-2 rounded-[12px] bg-gradient-to-r from-[#002855] to-[#0097A7] text-white text-xs font-bold transition-all shadow-[0_4px_12px_rgba(0,151,167,0.35)] flex items-center gap-1.5 cursor-pointer"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>Install</span>
+          </motion.button>
+          <button
+            onClick={() => setIsVisible(false)}
+            className="p-1.5 text-gray-400 hover:text-white rounded-lg transition cursor-pointer"
+            aria-label="Close install prompt"
+          >
+            <CloseIcon className="w-4 h-4" />
+          </button>
+        </div>
+      </motion.div>
     </AnimatePresence>
   );
 }
