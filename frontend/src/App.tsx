@@ -70,7 +70,7 @@ function Navbar({ isLoggedIn, user, onLogout }: { isLoggedIn: boolean; user: any
             {navItem('/', 'Scan Hub', Sparkles)}
             {navItem('/dashboard', 'Dashboard', LayoutDashboard)}
             {navItem('/community', 'Community', MessageSquare)}
-            {isLoggedIn && user?.email === 'vamshi@trustforge.app' && navItem('/admin', 'Admin Portal', ShieldAlert, true)}
+            {isLoggedIn && user?.email === 'vamshikrishna9608@gmail.com' && navItem('/admin', 'Admin Portal', ShieldAlert, true)}
 
             {isLoggedIn && user?.plan === 'pro' && (
               <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-[9px] font-bold uppercase tracking-wider font-mono">
@@ -234,7 +234,7 @@ export default function App() {
           />
           <Route 
             path="/admin" 
-            element={isLoggedIn && user?.email === 'vamshi@trustforge.app' ? <AdminPage /> : <NotFound />} 
+            element={isLoggedIn && user?.email === 'vamshikrishna9608@gmail.com' ? <AdminPage /> : <NotFound />} 
           />
           {/* 404 fallback */}
           <Route path="*" element={<NotFound />} />
