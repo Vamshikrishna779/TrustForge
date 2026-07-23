@@ -13,3 +13,4 @@ pypdf==4.2.0
 python-whois==0.9.3
 dnspython==2.6.1
 razorpay==1.4.1
+supabase==2.7.4
