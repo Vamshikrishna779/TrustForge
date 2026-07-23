@@ -1,4 +1,4 @@
-# TrustForge � Complete Deployment Guide
+﻿# TrustForge — Complete Deployment & Local Setup Guide
 
 > Follow each phase in order. Everything is FREE. No credit card needed.
 
@@ -6,14 +6,14 @@
 
 ## Live Production Architecture
 
-```
-Frontend  ? Cloudflare Pages   ? https://trustforge-app.pages.dev
-Backend   ? Render.com         ? https://trustforge-backend-nz74.onrender.com
-Keep-Alive? UptimeRobot        ? pings backend every 5 min (prevents cold starts)
-Database  ? Supabase           ? https://bgphyzwxmzcwtahaeuje.supabase.co
-Payments  ? Razorpay           ? Test mode configured (Live ready)
-GitHub    ? Source Control     ? https://github.com/Vamshikrishna779/TrustForge
-```
+`
+Frontend  → Cloudflare Pages   → https://trustforge-app.pages.dev
+Backend   → Render.com         → https://trustforge-backend-nz74.onrender.com
+Keep-Alive→ UptimeRobot        → pings backend every 5 min (prevents cold starts)
+Database  → Supabase           → https://bgphyzwxmzcwtahaeuje.supabase.co
+Payments  → Razorpay           → Test mode configured (Live ready)
+GitHub    → Source Control     → https://github.com/Vamshikrishna779/TrustForge
+`
 
 ---
 
@@ -30,96 +30,131 @@ GitHub    ? Source Control     ? https://github.com/Vamshikrishna779/TrustForge
 
 ---
 
-## PHASE 0 � Database & Supabase Verification
+## LOCAL DEVELOPMENT SETUP (Run App Locally on Windows)
 
-Run this in your **Supabase SQL Editor** to ensure Razorpay support:
+### 1. Run Backend Locally
 
-```sql
-ALTER TABLE user_plans
-  ADD COLUMN IF NOT EXISTS razorpay_payment_id TEXT,
-  ADD COLUMN IF NOT EXISTS razorpay_order_id TEXT;
-```
+`powershell
+# Open Terminal 1
+cd C:\TrustForge\backend
+
+# Install Python requirements
+pip install -r requirements.txt
+
+# Start FastAPI dev server
+uvicorn main:app --reload --port 8000
+`
+> Local Backend API: http://localhost:8000  
+> Local API Docs: http://localhost:8000/docs
 
 ---
 
-## PHASE 1 � GitHub Source Push
+### 2. Run Frontend Locally
 
-```powershell
+`powershell
+# Open Terminal 2
+cd C:\TrustForge\frontend
+
+# Install dependencies (if not done)
+npm install
+
+# Start Vite dev server
+npm run dev
+`
+> Local Web App: http://localhost:5173
+
+---
+
+## PHASE 0 — Database & Supabase Verification
+
+Run this in your **Supabase SQL Editor** to ensure Razorpay support:
+
+`sql
+ALTER TABLE user_plans
+  ADD COLUMN IF NOT EXISTS razorpay_payment_id TEXT,
+  ADD COLUMN IF NOT EXISTS razorpay_order_id TEXT;
+`
+
+---
+
+## PHASE 1 — GitHub Source Push
+
+`powershell
 cd C:\TrustForge
 git add .
 git commit -m "Update application"
 git push origin main
-```
+`
 
 ---
 
-## PHASE 2 � Render Backend Setup
+## PHASE 2 — Render Backend Setup
 
 1. Log in to [Render Dashboard](https://dashboard.render.com).
-2. Connected Web Service: `trustforge-backend`
-3. Repository: `Vamshikrishna779/TrustForge`
+2. Connected Web Service: 	rustforge-backend
+3. Repository: Vamshikrishna779/TrustForge
 4. Configurations:
-   - **Root Directory**: `backend`
-   - **Runtime**: `Python 3`
-   - **Build Command**: `pip install -r requirements.txt`
-   - **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
-   - **Plan**: `Free`
+   - **Root Directory**: ackend
+   - **Runtime**: Python 3
+   - **Build Command**: pip install -r requirements.txt
+   - **Start Command**: uvicorn main:app --host 0.0.0.0 --port 
+   - **Plan**: Free
 5. **Environment Variables**:
-   - `GEMINI_API_KEY`: *(Your Gemini API key)*
-   - `SUPABASE_URL`: `https://bgphyzwxmzcwtahaeuje.supabase.co`
-   - `SUPABASE_KEY`: *(Your Supabase anon key)*
-   - `RAZORPAY_KEY_ID`: `rzp_test_XXXXXXXXXXXXXXXX`
-   - `RAZORPAY_KEY_SECRET`: *(Your Razorpay key secret)*
-   - `DATABASE_URL`: `sqlite:///./trustforge.db`
+   - GEMINI_API_KEY: *(Your Gemini API key)*
+   - SUPABASE_URL: https://bgphyzwxmzcwtahaeuje.supabase.co
+   - SUPABASE_KEY: *(Your Supabase anon key)*
+   - RAZORPAY_KEY_ID: zp_test_XXXXXXXXXXXXXXXX
+   - RAZORPAY_KEY_SECRET: *(Your Razorpay key secret)*
+   - DATABASE_URL: sqlite:///./trustforge.db
 
-> **Backend URL**: `https://trustforge-backend-nz74.onrender.com`
+> **Backend URL**: https://trustforge-backend-nz74.onrender.com
 
 ---
 
-## PHASE 3 � Cloudflare Pages Frontend Deployment
+## PHASE 3 — Cloudflare Pages Frontend Deployment
 
-```powershell
+`powershell
 # 1. Build frontend dist
 cd C:\TrustForge\frontend
 npm run build
 
 # 2. Deploy to Cloudflare Pages project
 wrangler pages deploy dist --project-name trustforge-app
-```
+`
 
-> **Live Frontend URL**: `https://trustforge-app.pages.dev`
+> **Live Frontend URL**: https://trustforge-app.pages.dev
 
 ---
 
-## PHASE 4 � Prevent Backend Sleep (UptimeRobot)
+## PHASE 4 — Prevent Backend Sleep (UptimeRobot)
 
 1. Log in to [UptimeRobot Dashboard](https://uptimerobot.com).
 2. Add New Monitor:
-   - **Type**: `HTTP(s)`
-   - **Name**: `TrustForge Backend`
-   - **URL**: `https://trustforge-backend-nz74.onrender.com/`
-   - **Interval**: `Every 5 minutes`
+   - **Type**: HTTP(s)
+   - **Name**: TrustForge Backend
+   - **URL**: https://trustforge-backend-nz74.onrender.com/
+   - **Interval**: Every 5 minutes
 3. Save monitor. This prevents Render from going into 50-second cold starts.
 
 ---
 
-## PHASE 5 � Future Code Maintenance & Updates
+## PHASE 5 — Future Code Maintenance & Updates
 
 ### To update Backend & Logic:
-```powershell
+`powershell
 cd C:\TrustForge
 git add .
 git commit -m "Your update description"
 git push origin main
-```
+`
 *(Render will automatically detect the push and redeploy the backend)*
 
 ### To update Frontend UI:
-```powershell
+`powershell
 cd C:\TrustForge\frontend
 npm run build
 wrangler pages deploy dist --project-name trustforge-app
-```
+`
 
 ---
 
@@ -128,4 +163,6 @@ wrangler pages deploy dist --project-name trustforge-app
 - **Live Application**: [https://trustforge-app.pages.dev](https://trustforge-app.pages.dev)
 - **Live API Endpoint**: [https://trustforge-backend-nz74.onrender.com](https://trustforge-backend-nz74.onrender.com)
 - **Interactive API Docs (Swagger)**: [https://trustforge-backend-nz74.onrender.com/docs](https://trustforge-backend-nz74.onrender.com/docs)
+- **Local Dev App**: [http://localhost:5173](http://localhost:5173)
+- **Local Dev API Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
 - **GitHub Repository**: [https://github.com/Vamshikrishna779/TrustForge](https://github.com/Vamshikrishna779/TrustForge)
