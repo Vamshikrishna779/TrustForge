@@ -21,15 +21,20 @@ def check_domain_age(domain: str) -> dict:
             "note": "Official TrustForge Platform application site."
         }
 
-    # 2. Developer Platforms
-    dev_platforms = ["pages.dev", "onrender.com", "vercel.app", "netlify.app", "github.io", "hf.space"]
+    # 2. Developer Platforms & Free Hosting Providers
+    dev_platforms = [
+        "pages.dev", "onrender.com", "vercel.app", "netlify.app", 
+        "github.io", "hf.space", "web.app", "firebaseapp.com",
+        "glitch.me", "replit.app", "fly.dev", "railway.app",
+        "surge.sh", "herokuapp.com", "deno.dev"
+    ]
     for platform in dev_platforms:
         if domain.endswith(platform):
             return {
                 "age_days": 365,
                 "status": "dev_platform",
                 "platform": platform,
-                "note": f"Hosted on free developer platform ({platform}). Used by developers and startups."
+                "note": f"Hosted on free developer platform ({platform}). Used by developers and legitimate projects."
             }
 
     try:
