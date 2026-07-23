@@ -9,7 +9,7 @@ import {
   Send, Shield, Sparkles,
   TrendingUp, Database, Cpu, Search, ChevronRight, Code, ExternalLink
 } from 'lucide-react';
-import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface LandingProps {
   onScanComplete: (reportId: string) => void;
@@ -18,61 +18,27 @@ interface LandingProps {
 type ScanTab = 'website' | 'document' | 'email' | 'text' | 'training';
 
 // ──────────────────────────────────────────────────────────────
-// Animated Orb Background
+// Animated Orb Background (GPU-Optimized for 60fps scrolling)
 // ──────────────────────────────────────────────────────────────
 function LiveBackground() {
-  const { scrollYProgress } = useScroll();
-  const y1 = useTransform(scrollYProgress, [0, 1], [0, -300]);
-  const y2 = useTransform(scrollYProgress, [0, 1], [0, -180]);
-  const y3 = useTransform(scrollYProgress, [0, 1], [0, -240]);
-  const opacity = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [1, 0.7, 0.5, 0.3]);
-
   return (
-    <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+    <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden will-change-transform">
       {/* Base dark */}
       <div className="absolute inset-0 bg-[#04101B]" />
 
       {/* Animated grid lines */}
       <div
-        className="absolute inset-0 opacity-[0.035]"
+        className="absolute inset-0 opacity-[0.03]"
         style={{
-          backgroundImage: 'linear-gradient(rgba(0,164,180,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(0,164,180,0.5) 1px, transparent 1px)',
+          backgroundImage: 'linear-gradient(rgba(0,164,180,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(0,164,180,0.4) 1px, transparent 1px)',
           backgroundSize: '60px 60px',
         }}
       />
 
-      {/* Floating orbs */}
-      <motion.div
-        style={{ y: y1, opacity }}
-        className="absolute top-[-15%] left-[-10%] w-[70vw] h-[70vw] max-w-[700px] max-h-[700px] rounded-full"
-        animate={{ scale: [1, 1.08, 1], rotate: [0, 10, 0] }}
-        transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
-      >
-        <div className="w-full h-full rounded-full bg-[radial-gradient(ellipse_at_center,rgba(0,164,180,0.18)_0%,transparent_70%)] blur-[80px]" />
-      </motion.div>
+      {/* Optimized Floating Orbs using transform-gpu */}
+      <div className="absolute top-[-10%] left-[-10%] w-[60vw] h-[60vw] max-w-[600px] max-h-[600px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(0,164,180,0.15)_0%,transparent_70%)] blur-[40px] transform-gpu animate-pulse" style={{ animationDuration: '10s' }} />
 
-      <motion.div
-        style={{ y: y2, opacity }}
-        className="absolute bottom-[10%] right-[-15%] w-[60vw] h-[60vw] max-w-[600px] max-h-[600px] rounded-full"
-        animate={{ scale: [1, 1.12, 1], rotate: [0, -15, 0] }}
-        transition={{ duration: 22, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
-      >
-        <div className="w-full h-full rounded-full bg-[radial-gradient(ellipse_at_center,rgba(0,43,73,0.35)_0%,transparent_70%)] blur-[80px]" />
-      </motion.div>
-
-      <motion.div
-        style={{ y: y3 }}
-        className="absolute top-[40%] left-[30%] w-[50vw] h-[50vw] max-w-[500px] max-h-[500px] rounded-full"
-        animate={{ scale: [1, 1.06, 1] }}
-        transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut', delay: 4 }}
-      >
-        <div className="w-full h-full rounded-full bg-[radial-gradient(ellipse_at_center,rgba(37,99,235,0.06)_0%,transparent_70%)] blur-[100px]" />
-      </motion.div>
-
-      {/* Subtle noise overlay */}
-      <div className="absolute inset-0 opacity-[0.015]"
-        style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.65\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")' }}
-      />
+      <div className="absolute bottom-[5%] right-[-10%] w-[55vw] h-[55vw] max-w-[550px] max-h-[550px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(0,43,73,0.3)_0%,transparent_70%)] blur-[40px] transform-gpu animate-pulse" style={{ animationDuration: '14s' }} />
     </div>
   );
 }
