@@ -92,20 +92,41 @@ body {
   filter: blur(80px);
 }
 
-/* Print Layout Specifications */
+/* Print Layout Specifications for Export PDF */
 @media print {
-  body {
-    background-color: white !important;
-    color: black !important;
+  @page {
+    margin: 15mm;
+    size: A4;
   }
-  nav, .print\:hidden, button, form {
+  body {
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    font-family: system-ui, -apple-system, sans-serif !important;
+  }
+  nav, .print\:hidden, button, input, textarea, form, .ambient-glow-wrapper {
     display: none !important;
   }
   .glass-card {
-    background: none !important;
+    background: #ffffff !important;
     backdrop-filter: none !important;
-    border: none !important;
+    border: 1px solid #e5e7eb !important;
     box-shadow: none !important;
-    color: black !important;
+    color: #111827 !important;
+    border-radius: 12px !important;
+    page-break-inside: avoid;
+  }
+  h1, h2, h3, h4, h5, p, span, div {
+    color: #111827 !important;
+  }
+  .text-white {
+    color: #111827 !important;
+  }
+  .text-gray-300, .text-[#C8C8CC], .text-gray-400 {
+    color: #374151 !important;
+  }
+  .bg-\[\#09090b\]\/60, .bg-\[\#09090b\]\/80, .bg-\[\#09090b\]\/75, .bg-\[\#0D0D10\] {
+    background-color: #f9fafb !important;
+    border: 1px solid #e5e7eb !important;
   }
 }
+

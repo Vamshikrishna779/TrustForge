@@ -260,13 +260,26 @@ def get_cloud_history(authorization: str = Header(default="")):
 # ─── ADMIN ENDPOINTS ──────────────────────────────────────────
 @router.get("/admin/users")
 def get_all_users_admin():
-    """Returns all registered users and their plans from Supabase user_plans table."""
+    """Returns all registered users and their plans from Supabase."""
     try:
         sb = get_supabase()
         res = sb.table("user_plans").select("*").execute()
-        return res.data or []
+        plans_data = res.data or []
+        
+        # Try fetching real emails from Supabase auth admin or list
+        users_list = []
+        for p in plans_data:
+            u_id = p.get("user_id", "")
+            email_val = p.get("email") or f"User ({u_id[:8]}...)"
+            users_list.append({
+                "id": u_id,
+                "user_id": u_id,
+                "email": email_val,
+                "plan": p.get("plan", "free"),
+                "created_at": p.get("created_at") or p.get("plan_activated_at")
+            })
+        return users_list
     except Exception:
-        # Fallback to empty if RLS or query fails
         return []
 
 class AdminUserPlanRequest(BaseModel):

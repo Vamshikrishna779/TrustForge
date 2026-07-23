@@ -52,7 +52,7 @@ export const AdminPage: React.FC = () => {
         if (Array.isArray(uData) && uData.length > 0) {
           setUsers(uData.map((u: any) => ({
             id: u.user_id || u.id,
-            email: u.user_id ? `user_${u.user_id.slice(0,6)}@supabase` : u.email || 'User',
+            email: u.email || (u.user_id ? `User (ID: ${u.user_id.slice(0, 8)}...)` : 'Registered User'),
             plan: u.plan || 'free',
             created_at: u.created_at ? new Date(u.created_at).toLocaleDateString() : 'Active'
           })));
@@ -169,44 +169,44 @@ export const AdminPage: React.FC = () => {
 
       {/* Main Tabs */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between gap-4 border-b border-white/[0.08] pb-3">
-          <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-b border-white/[0.08] pb-3">
+          <div className="flex gap-2 overflow-x-auto pb-1 sm:pb-0">
             <button
               onClick={() => setActiveTab('users')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold font-mono transition flex items-center gap-2 ${
+              className={`px-3 sm:px-4 py-2 rounded-xl text-xs font-bold font-mono transition flex items-center gap-2 whitespace-nowrap ${
                 activeTab === 'users' ? 'bg-[#2563EB] text-white shadow-lg' : 'bg-white/[0.04] text-gray-400 hover:text-white'
               }`}
             >
               <Users className="w-4 h-4" />
-              Manage Users & Plans ({users.length})
+              Users ({users.length})
             </button>
             <button
               onClick={() => setActiveTab('reports')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold font-mono transition flex items-center gap-2 ${
+              className={`px-3 sm:px-4 py-2 rounded-xl text-xs font-bold font-mono transition flex items-center gap-2 whitespace-nowrap ${
                 activeTab === 'reports' ? 'bg-[#2563EB] text-white shadow-lg' : 'bg-white/[0.04] text-gray-400 hover:text-white'
               }`}
             >
               <ShieldAlert className="w-4 h-4" />
-              Moderate Reports ({reports.length})
+              Reports ({reports.length})
             </button>
           </div>
 
-          <div className="relative w-48 sm:w-64">
+          <div className="relative w-full sm:w-64">
             <Search className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Search..."
+              placeholder="Search users or reports..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-white/[0.05] border border-white/[0.1] text-xs text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+              className="w-full pl-9 pr-3 py-2 rounded-xl bg-white/[0.05] border border-white/[0.1] text-xs text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
             />
           </div>
         </div>
 
         {/* Tab 1: Users Table */}
         {activeTab === 'users' && (
-          <div className="rounded-2xl glass-card border border-white/[0.08] overflow-hidden">
-            <table className="w-full text-left border-collapse">
+          <div className="rounded-2xl glass-card border border-white/[0.08] overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[550px]">
               <thead>
                 <tr className="border-b border-white/[0.08] bg-white/[0.02] text-xs font-mono font-bold text-gray-400 uppercase">
                   <th className="p-4">User Email</th>
