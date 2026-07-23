@@ -87,25 +87,13 @@ function Navbar({ isLoggedIn, user, onLogout }: { isLoggedIn: boolean; user: any
             {navItem('/', 'Scan Hub', Sparkles)}
             {navItem('/dashboard', 'Dashboard', LayoutDashboard)}
             {navItem('/community', 'Community', MessageSquare)}
+            {isLoggedIn && navItem('/profile', user?.display_name || 'Profile', User)}
             {isLoggedIn && user?.email === 'vamshikrishna9608@gmail.com' && navItem('/admin', 'Admin Portal', ShieldAlert, true)}
 
             {isLoggedIn && user?.plan === 'pro' && (
-              <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-[9px] font-bold uppercase tracking-wider font-mono">
+              <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[9px] font-bold uppercase tracking-wider font-mono">
                 <Star className="w-2.5 h-2.5" /> Pro
               </div>
-            )}
-
-            {isLoggedIn && (
-              <Link to="/profile" className="no-underline">
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.97 }}
-                  className="flex items-center gap-1.5 py-1.5 px-3 rounded-[12px] bg-white/[0.05] border border-white/[0.08] hover:border-white/[0.2] text-xs font-semibold text-white transition-all cursor-pointer"
-                >
-                  <User className="w-3.5 h-3.5 text-[#2563EB]" />
-                  <span>{user?.display_name || user?.email?.split('@')[0] || 'Profile'}</span>
-                </motion.div>
-              </Link>
             )}
 
             {/* Theme Toggle Button */}
@@ -148,20 +136,13 @@ function Navbar({ isLoggedIn, user, onLogout }: { isLoggedIn: boolean; user: any
               {navItem('/', 'Scan Hub', Sparkles)}
               {navItem('/dashboard', 'Dashboard', LayoutDashboard)}
               {navItem('/community', 'Community', MessageSquare)}
+              {isLoggedIn && navItem('/profile', user?.display_name || 'Profile', User)}
+              {isLoggedIn && user?.email === 'vamshikrishna9608@gmail.com' && navItem('/admin', 'Admin Portal', ShieldAlert, true)}
 
               {isLoggedIn && user?.plan === 'pro' && (
-                <div className="flex items-center gap-1.5 px-3 py-2.5 rounded-[12px] bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-xs font-bold uppercase tracking-wider font-mono justify-center">
+                <div className="flex items-center gap-1.5 px-3 py-2.5 rounded-[12px] bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-bold uppercase tracking-wider font-mono justify-center">
                   <Star className="w-4 h-4" /> Pro Plan Active
                 </div>
-              )}
-
-              {isLoggedIn && (
-                <Link to="/profile" className="no-underline w-full" onClick={() => setIsOpen(false)}>
-                  <div className="flex items-center gap-2.5 py-2.5 px-3 rounded-[12px] bg-white/[0.05] border border-white/[0.08] text-xs font-semibold text-white">
-                    <User className="w-4 h-4 text-[#2563EB]" />
-                    <span>{user?.display_name || user?.email?.split('@')[0] || 'Profile'}</span>
-                  </div>
-                </Link>
               )}
 
               {isLoggedIn ? (

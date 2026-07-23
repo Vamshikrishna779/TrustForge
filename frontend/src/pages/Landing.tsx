@@ -30,13 +30,13 @@ function LiveBackground() {
   return (
     <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
       {/* Base dark */}
-      <div className="absolute inset-0 bg-[#08080A]" />
+      <div className="absolute inset-0 bg-[#04101B]" />
 
       {/* Animated grid lines */}
       <div
-        className="absolute inset-0 opacity-[0.025]"
+        className="absolute inset-0 opacity-[0.035]"
         style={{
-          backgroundImage: 'linear-gradient(rgba(37,99,235,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(37,99,235,0.5) 1px, transparent 1px)',
+          backgroundImage: 'linear-gradient(rgba(0,164,180,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(0,164,180,0.5) 1px, transparent 1px)',
           backgroundSize: '60px 60px',
         }}
       />
@@ -48,7 +48,7 @@ function LiveBackground() {
         animate={{ scale: [1, 1.08, 1], rotate: [0, 10, 0] }}
         transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
       >
-        <div className="w-full h-full rounded-full bg-[radial-gradient(ellipse_at_center,rgba(37,99,235,0.12)_0%,transparent_70%)] blur-[80px]" />
+        <div className="w-full h-full rounded-full bg-[radial-gradient(ellipse_at_center,rgba(0,164,180,0.18)_0%,transparent_70%)] blur-[80px]" />
       </motion.div>
 
       <motion.div
@@ -57,7 +57,7 @@ function LiveBackground() {
         animate={{ scale: [1, 1.12, 1], rotate: [0, -15, 0] }}
         transition={{ duration: 22, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
       >
-        <div className="w-full h-full rounded-full bg-[radial-gradient(ellipse_at_center,rgba(124,58,237,0.08)_0%,transparent_70%)] blur-[80px]" />
+        <div className="w-full h-full rounded-full bg-[radial-gradient(ellipse_at_center,rgba(0,43,73,0.35)_0%,transparent_70%)] blur-[80px]" />
       </motion.div>
 
       <motion.div
@@ -328,7 +328,7 @@ export default function Landing({ onScanComplete }: LandingProps) {
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#2563EB]/30 bg-[#2563EB]/10 backdrop-blur-sm text-[#60A5FA] text-[11px] font-semibold tracking-wide uppercase font-mono"
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#0097A7]/30 bg-[#0097A7]/10 backdrop-blur-sm text-[#00B4D8] text-[11px] font-semibold tracking-wide uppercase font-mono"
           >
             <Zap className="w-3 h-3" /> AI-Powered Threat Intelligence Platform
           </motion.div>
@@ -336,34 +336,34 @@ export default function Landing({ onScanComplete }: LandingProps) {
           <h1 className="text-5xl md:text-7xl font-heading font-extrabold tracking-tight text-white leading-[1.05]">
             Know Before
             <br />
-            <span className="bg-gradient-to-r from-[#2563EB] via-[#60A5FA] to-[#818CF8] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[#002855] via-[#0097A7] to-[#00B4D8] bg-clip-text text-transparent">
               You Trust
             </span>
           </h1>
 
-          <p className="text-base text-[#9E9EA4] max-w-2xl mx-auto font-light leading-relaxed">
+          <p className="text-base text-[#8AB4CE] max-w-2xl mx-auto font-light leading-relaxed">
             Verify websites, documents, recruiter emails, WhatsApp messages & training programs
             using deterministic rule checks and Google Gemini AI — completely free.
           </p>
 
           {/* Quick search bar */}
           <form onSubmit={handleSearchSubmit} className="max-w-2xl mx-auto pt-2 w-full">
-            <div className="flex flex-col sm:flex-row gap-2 p-2 bg-[#0D0D10]/90 backdrop-blur-md border border-white/[0.08] rounded-[20px] sm:rounded-[24px] shadow-[0_20px_60px_rgba(0,0,0,0.6)]">
+            <div className="flex flex-col sm:flex-row gap-2 p-2 bg-[#0A2034]/90 backdrop-blur-md border border-[#0097A7]/20 rounded-[20px] sm:rounded-[24px] shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
               <div className="flex items-center gap-2 pl-3 flex-1 min-w-0">
-                <Search className="w-4 h-4 text-[#555] shrink-0" />
+                <Search className="w-4 h-4 text-[#8AB4CE] shrink-0" />
                 <input
                   type="text"
                   value={searchVal}
                   onChange={(e) => setSearchVal(e.target.value)}
                   placeholder="Paste URL, email address..."
-                  className="w-full py-2 bg-transparent border-0 text-sm text-white placeholder-[#444] focus:outline-none"
+                  className="w-full py-2 bg-transparent border-0 text-sm text-white placeholder-gray-400 focus:outline-none"
                 />
               </div>
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 type="submit"
-                className="w-full sm:w-auto px-6 py-2.5 bg-[#2563EB] hover:bg-blue-700 text-white rounded-[16px] sm:rounded-[18px] font-bold text-xs cursor-pointer transition-colors flex items-center justify-center gap-2 shrink-0 shadow-[0_4px_12px_rgba(37,99,235,0.3)]"
+                className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-[#002855] to-[#0097A7] hover:from-[#003366] hover:to-[#00B4D8] text-white rounded-[16px] sm:rounded-[18px] font-bold text-xs cursor-pointer transition-all flex items-center justify-center gap-2 shrink-0 shadow-[0_4px_20px_rgba(0,151,167,0.35)]"
               >
                 <span>Verify Now</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -404,12 +404,12 @@ export default function Landing({ onScanComplete }: LandingProps) {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/[0.05] pb-5 gap-4">
               <div>
                 <h3 className="text-sm font-bold uppercase tracking-widest text-white font-mono flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-[#2563EB]" /> Verify Anything
+                  <Shield className="w-4 h-4 text-[#00A4B4]" /> Verify Anything
                 </h3>
-                <p className="text-[11px] text-[#666] mt-1">Select the verification channel for AI analysis.</p>
+                <p className="text-[11px] text-[#8AB4CE] mt-1">Select the verification channel for AI analysis.</p>
               </div>
 
-              <div className="flex flex-wrap sm:grid sm:grid-cols-5 gap-1.5 bg-[#09090b]/80 p-1.5 border border-white/[0.05] rounded-[18px] relative w-full sm:w-auto">
+              <div className="flex flex-wrap sm:grid sm:grid-cols-5 gap-1.5 bg-[#0A2034]/80 p-1.5 border border-[#0097A7]/20 rounded-[18px] relative w-full sm:w-auto">
                 {(Object.keys(tabConfig) as ScanTab[]).map((tab) => {
                   const isActive = activeTab === tab;
                   const TabIcon = tabConfig[tab].icon;
@@ -422,7 +422,7 @@ export default function Landing({ onScanComplete }: LandingProps) {
                       {isActive && (
                         <motion.div
                           layoutId="activeScanTab"
-                          className="absolute inset-0 bg-[#2563EB] rounded-[12px] z-0 shadow-[0_4px_16px_rgba(37,99,235,0.25)]"
+                          className="absolute inset-0 bg-gradient-to-r from-[#002855] to-[#0097A7] rounded-[12px] z-0 shadow-[0_4px_16px_rgba(0,151,167,0.3)]"
                           transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                         />
                       )}
@@ -503,9 +503,9 @@ export default function Landing({ onScanComplete }: LandingProps) {
         {/* ── 4. HOW IT WORKS ─────────────────────────────────── */}
         <motion.section variants={itemVariants} className="space-y-8">
           <div className="text-center space-y-2">
-            <p className="text-[11px] font-mono text-[#2563EB] uppercase tracking-widest">How It Works</p>
+            <p className="text-[11px] font-mono text-[#00A4B4] uppercase tracking-widest">How It Works</p>
             <h2 className="text-3xl font-heading font-extrabold text-white">3-Step Threat Detection</h2>
-            <p className="text-sm text-[#777] max-w-lg mx-auto">Every scan runs through our deterministic rule engine before handing off to Gemini AI for an intelligent explanation.</p>
+            <p className="text-sm text-[#8AB4CE] max-w-lg mx-auto">Every scan runs through our deterministic rule engine before handing off to Gemini AI for an intelligent explanation.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
@@ -520,11 +520,11 @@ export default function Landing({ onScanComplete }: LandingProps) {
                 className="p-6 rounded-[20px] glass-card border border-white/[0.06] space-y-4 relative overflow-hidden group"
               >
                 <div className="absolute top-4 right-5 font-heading font-extrabold text-5xl text-white/[0.03] select-none group-hover:text-white/[0.05] transition-colors">{step}</div>
-                <div className="p-3 bg-[#2563EB]/10 border border-[#2563EB]/20 text-[#60A5FA] rounded-[14px] w-fit">
+                <div className="p-3 bg-[#0A2034] border border-[#00A4B4]/20 text-[#00A4B4] rounded-[14px] w-fit">
                   <Icon className="w-5 h-5" />
                 </div>
                 <h4 className="font-heading font-bold text-white text-sm">{title}</h4>
-                <p className="text-xs text-[#777] leading-relaxed">{desc}</p>
+                <p className="text-xs text-[#8AB4CE] leading-relaxed">{desc}</p>
               </motion.div>
             ))}
           </div>
@@ -533,7 +533,7 @@ export default function Landing({ onScanComplete }: LandingProps) {
         {/* ── 5. THREAT CATEGORIES ────────────────────────────── */}
         <motion.section variants={itemVariants} className="space-y-8">
           <div className="text-center space-y-2">
-            <p className="text-[11px] font-mono text-[#2563EB] uppercase tracking-widest">What We Detect</p>
+            <p className="text-[11px] font-mono text-[#00A4B4] uppercase tracking-widest">What We Detect</p>
             <h2 className="text-3xl font-heading font-extrabold text-white">Threat Categories</h2>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -542,7 +542,7 @@ export default function Landing({ onScanComplete }: LandingProps) {
               { icon: Mail, label: 'Fake Recruiter Emails', color: 'text-orange-400', bg: 'bg-orange-950/20 border-orange-900/20' },
               { icon: FileText, label: 'Scam Job Offers', color: 'text-yellow-400', bg: 'bg-yellow-950/20 border-yellow-900/20' },
               { icon: Send, label: 'WhatsApp/SMS Traps', color: 'text-green-400', bg: 'bg-green-950/20 border-green-900/20' },
-              { icon: GraduationCap, label: 'Fake Placement Academies', color: 'text-blue-400', bg: 'bg-blue-950/20 border-blue-900/20' },
+              { icon: GraduationCap, label: 'Fake Placement Academies', color: 'text-teal-400', bg: 'bg-teal-950/20 border-teal-900/20' },
               { icon: TrendingUp, label: 'Investment Scams', color: 'text-purple-400', bg: 'bg-purple-950/20 border-purple-900/20' },
             ].map(({ icon: Icon, label, color, bg }) => (
               <motion.div
@@ -560,9 +560,9 @@ export default function Landing({ onScanComplete }: LandingProps) {
         {/* ── 6. PRICING ──────────────────────────────────────── */}
         <motion.section variants={itemVariants} className="space-y-8" id="pricing">
           <div className="text-center space-y-2">
-            <p className="text-[11px] font-mono text-[#2563EB] uppercase tracking-widest">Pricing</p>
+            <p className="text-[11px] font-mono text-[#00A4B4] uppercase tracking-widest">Pricing</p>
             <h2 className="text-3xl font-heading font-extrabold text-white">Simple, Transparent Plans</h2>
-            <p className="text-sm text-[#777] max-w-lg mx-auto">Start free. Upgrade when you need more power. No hidden charges ever.</p>
+            <p className="text-sm text-[#8AB4CE] max-w-lg mx-auto">Start free. Upgrade when you need more power. No hidden charges ever.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
@@ -571,10 +571,10 @@ export default function Landing({ onScanComplete }: LandingProps) {
                 key={plan.name}
                 whileHover={{ y: -6 }}
                 transition={{ duration: 0.25 }}
-                className={`relative p-7 rounded-[24px] glass-card border ${plan.color} space-y-6 flex flex-col ${plan.badge ? 'shadow-[0_0_40px_rgba(37,99,235,0.15)]' : ''}`}
+                className={`relative p-7 rounded-[24px] glass-card border ${plan.color} space-y-6 flex flex-col ${plan.badge ? 'shadow-[0_0_40px_rgba(0,164,180,0.2)]' : ''}`}
               >
                 {plan.badge && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-[#2563EB] text-white text-[10px] font-bold uppercase tracking-wider shadow-[0_4px_12px_rgba(37,99,235,0.4)]">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-[#002855] to-[#0097A7] text-white text-[10px] font-bold uppercase tracking-wider shadow-[0_4px_12px_rgba(0,151,167,0.4)]">
                     {plan.badge}
                   </div>
                 )}
@@ -586,24 +586,24 @@ export default function Landing({ onScanComplete }: LandingProps) {
                   </div>
                   <div className="flex items-end gap-1.5">
                     <span className="text-4xl font-heading font-extrabold text-white">{plan.price}</span>
-                    <span className="text-xs text-[#666] mb-1.5 font-mono">/{plan.period}</span>
+                    <span className="text-xs text-[#8AB4CE] mb-1.5 font-mono">/{plan.period}</span>
                   </div>
-                  <p className="text-xs text-[#777]">{plan.tagline}</p>
+                  <p className="text-xs text-[#8AB4CE]">{plan.tagline}</p>
                 </div>
 
                 <ul className="space-y-2.5 flex-1">
                   {plan.features.map(({ text, ok }) => (
                     <li key={text} className="flex items-start gap-2.5 text-xs">
                       {ok
-                        ? <CheckCircle className="w-4 h-4 text-[#22C55E] shrink-0 mt-0.5" />
+                        ? <CheckCircle className="w-4 h-4 text-[#10B981] shrink-0 mt-0.5" />
                         : <XCircle className="w-4 h-4 text-[#333] shrink-0 mt-0.5" />}
-                      <span className={ok ? 'text-[#C8C8CC]' : 'text-[#444] line-through'}>{text}</span>
+                      <span className={ok ? 'text-gray-200' : 'text-[#555] line-through'}>{text}</span>
                     </li>
                   ))}
                 </ul>
 
                 {plan.name === 'Pro' && upgradeMsg && (
-                  <p className="text-[11px] text-[#22C55E] bg-green-950/20 border border-green-900/30 p-2.5 rounded-[12px]">
+                  <p className="text-[11px] text-[#10B981] bg-green-950/20 border border-green-900/30 p-2.5 rounded-[12px]">
                     {upgradeMsg}
                   </p>
                 )}
@@ -644,7 +644,7 @@ export default function Landing({ onScanComplete }: LandingProps) {
               { icon: Database, label: 'Open Source', desc: 'Full transparency, community-audited rules' },
             ].map(({ icon: Icon, label, desc }) => (
               <div key={label} className="p-5 rounded-[20px] glass-card border border-white/[0.05] text-center space-y-3">
-                <div className="mx-auto p-2.5 bg-[#2563EB]/10 border border-[#2563EB]/15 text-[#60A5FA] rounded-[12px] w-fit">
+                <div className="mx-auto p-2.5 bg-[#0A2034] border border-[#00A4B4]/20 text-[#00A4B4] rounded-[12px] w-fit">
                   <Icon className="w-4 h-4" />
                 </div>
                 <div>
