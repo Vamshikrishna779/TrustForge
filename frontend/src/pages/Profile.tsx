@@ -88,15 +88,15 @@ export default function Profile({ user, onLogout }: ProfileProps) {
     ? new Date(user.created_at).toLocaleDateString('en-IN', { year: 'numeric', month: 'long' })
     : 'Recently joined';
 
-  const scoreColor = avgScore >= 80 ? '#16A34A' : avgScore >= 50 ? '#F59E0B' : '#DC2626';
+  const scoreColor = avgScore >= 80 ? '#10B981' : avgScore >= 50 ? '#F59E0B' : '#EF4444';
 
-  const StatCard = ({ icon: Icon, label, value, color = '#2563EB' }: any) => (
+  const StatCard = ({ icon: Icon, label, value, color = '#00A4B4' }: any) => (
     <motion.div
       whileHover={{ y: -2 }}
-      className="p-4 rounded-[18px] bg-[#0D0D10] border border-white/[0.06] flex flex-col gap-2"
+      className="p-4 rounded-[18px] bg-[#0A2034]/70 border border-[#00A4B4]/20 flex flex-col gap-2"
     >
       <div className="flex items-center justify-between">
-        <span className="text-[10px] uppercase font-bold tracking-wider text-[#9E9EA4]">{label}</span>
+        <span className="text-[10px] uppercase font-bold tracking-wider text-[#8AB4CE]">{label}</span>
         <div className="p-1.5 rounded-[10px]" style={{ background: `${color}18` }}>
           <Icon className="w-3.5 h-3.5" style={{ color }} />
         </div>
@@ -116,16 +116,16 @@ export default function Profile({ user, onLogout }: ProfileProps) {
         className="p-6 sm:p-8 rounded-[24px] glass-card relative overflow-hidden"
       >
         {/* Background glow */}
-        <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#2563EB]/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#00A4B4]/15 rounded-full blur-3xl pointer-events-none" />
 
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 relative">
           {/* Avatar */}
           <div className="relative shrink-0">
-            <div className="w-20 h-20 rounded-[20px] bg-gradient-to-br from-[#2563EB] to-[#7C3AED] flex items-center justify-center text-2xl font-extrabold text-white shadow-[0_8px_24px_rgba(37,99,235,0.35)]">
+            <div className="w-20 h-20 rounded-[20px] bg-gradient-to-br from-[#002855] to-[#0097A7] flex items-center justify-center text-2xl font-extrabold text-white shadow-[0_8px_24px_rgba(0,151,167,0.35)]">
               {initials}
             </div>
             {isPro && (
-              <div className="absolute -top-1.5 -right-1.5 p-1 bg-yellow-500 rounded-full shadow-lg">
+              <div className="absolute -top-1.5 -right-1.5 p-1 bg-amber-400 rounded-full shadow-lg">
                 <Crown className="w-3 h-3 text-black" />
               </div>
             )}
@@ -137,13 +137,13 @@ export default function Profile({ user, onLogout }: ProfileProps) {
               <h1 className="text-2xl font-heading font-extrabold text-white truncate">{displayName}</h1>
               <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider font-mono ${
                 isPro
-                  ? 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/25'
-                  : 'bg-[#2563EB]/15 text-[#60A5FA] border border-[#2563EB]/25'
+                  ? 'bg-amber-500/15 text-amber-400 border border-amber-500/25'
+                  : 'bg-[#00A4B4]/15 text-[#00A4B4] border border-[#00A4B4]/25'
               }`}>
                 {isPro ? '⭐ Pro Plan' : 'Free Plan'}
               </span>
             </div>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#9E9EA4]">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#8AB4CE]">
               <span className="flex items-center gap-1.5"><Mail className="w-3 h-3" />{email}</span>
               <span className="flex items-center gap-1.5"><Calendar className="w-3 h-3" />Member since {memberSince}</span>
             </div>
@@ -164,7 +164,7 @@ export default function Profile({ user, onLogout }: ProfileProps) {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.97 }}
               onClick={onLogout}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-[12px] bg-white/[0.04] border border-white/[0.06] hover:border-[#DC2626]/40 hover:text-[#DC2626] text-xs font-semibold text-[#9E9EA4] transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-[12px] bg-white/[0.04] border border-white/[0.06] hover:border-[#EF4444]/40 hover:text-[#EF4444] text-xs font-semibold text-[#8AB4CE] transition-all cursor-pointer"
             >
               <LogOut className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Logout</span>
@@ -180,9 +180,9 @@ export default function Profile({ user, onLogout }: ProfileProps) {
         transition={{ duration: 0.3, delay: 0.05 }}
         className="grid grid-cols-2 sm:grid-cols-4 gap-3"
       >
-        <StatCard icon={FileText}     label="Total Scans"    value={loadingHistory ? '—' : totalScans} color="#2563EB" />
-        <StatCard icon={ShieldAlert}  label="Threats Found"  value={loadingHistory ? '—' : threatsFound} color="#DC2626" />
-        <StatCard icon={ShieldCheck}  label="Safe Passed"    value={loadingHistory ? '—' : safePassed} color="#16A34A" />
+        <StatCard icon={FileText}     label="Total Scans"    value={loadingHistory ? '—' : totalScans} color="#00A4B4" />
+        <StatCard icon={ShieldAlert}  label="Threats Found"  value={loadingHistory ? '—' : threatsFound} color="#EF4444" />
+        <StatCard icon={ShieldCheck}  label="Safe Passed"    value={loadingHistory ? '—' : safePassed} color="#10B981" />
         <StatCard icon={TrendingUp}   label="Avg Trust Score" value={loadingHistory ? '—' : (totalScans ? avgScore : '—')} color="#F59E0B" />
       </motion.div>
 
