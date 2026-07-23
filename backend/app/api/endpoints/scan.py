@@ -544,3 +544,17 @@ def get_live_stats(db: Session = Depends(get_db)):
         "channels": channels,
     }
 
+@router.delete("/report/{report_id}")
+def delete_scan_report(report_id: str, db: Session = Depends(get_db)):
+    """Deletes a scan report record from SQLite database."""
+    report = db.query(Report).filter(Report.id == report_id).first()
+    if not report:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Scan report not found."
+        )
+    db.delete(report)
+    db.commit()
+    return {"status": "success", "message": f"Scan report {report_id} deleted."}
+
+
