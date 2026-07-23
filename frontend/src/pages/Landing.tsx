@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
 import { API_BASE } from '../api';
 import { initiateProUpgrade } from '../utils/razorpay';
@@ -5,7 +6,7 @@ import Scanner from '../components/Scanner';
 import {
   ShieldCheck, Link2, FileText, Mail, FileCheck, RefreshCw, ArrowRight,
   GraduationCap, Zap, Globe, Lock, Eye, CheckCircle, XCircle, Star,
-  Send, Phone, MapPin, Shield, Sparkles,
+  Send, Shield, Sparkles,
   TrendingUp, Database, Cpu, Search, ChevronRight, Code, ExternalLink
 } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
@@ -262,17 +263,13 @@ export default function Landing({ onScanComplete }: LandingProps) {
       color: 'border-white/[0.08]',
       badge: null,
       features: [
-        { text: '10 scans per day', ok: true },
-        { text: 'Website & Email scan', ok: true },
-        { text: 'Document scan (PDF/Image)', ok: true },
-        { text: 'Trust Score report', ok: true },
-        { text: 'Trust Assistant chat (5 msgs/day)', ok: true },
-        { text: 'Scan history (last 7 days)', ok: true },
-        { text: 'Training program check', ok: false },
-        { text: 'Priority AI model (Flash Pro)', ok: false },
-        { text: 'Bulk batch scanning', ok: false },
-        { text: 'API access', ok: false },
-        { text: 'Exportable PDF reports', ok: false },
+        { text: 'Daily scan limit', ok: true },
+        { text: 'Website & Recruiter Email scan', ok: true },
+        { text: 'Document scan (PDF & Image)', ok: true },
+        { text: 'AI Trust Score & Breakdown', ok: true },
+        { text: 'Local scan history (7 days)', ok: true },
+        { text: 'Cloud history backup', ok: false },
+        { text: 'Placement Academy audit', ok: false },
       ],
       cta: 'Get Started Free',
       ctaStyle: 'bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] text-white',
@@ -283,21 +280,17 @@ export default function Landing({ onScanComplete }: LandingProps) {
       name: 'Pro',
       price: '₹7',
       period: 'per month',
-      tagline: isPro ? 'You have full access to all Pro features' : isProLocked ? 'Pro upgrades temporarily locked' : 'For teams, researchers & power users',
+      tagline: isPro ? 'You have full access to all Pro features' : isProLocked ? 'Pro upgrades temporarily locked' : 'For candidates, researchers & power users',
       color: isPro ? 'border-emerald-500/50 bg-emerald-950/10' : isProLocked ? 'border-red-900/30 bg-red-950/5' : 'border-[#2563EB]/50',
       badge: isPro ? '✓ Active Plan' : isProLocked ? '🔒 Limit Reached' : 'Most Popular',
       features: [
-        { text: 'Unlimited scans', ok: true },
-        { text: 'Website & Email scan', ok: true },
-        { text: 'Document scan (PDF/Image)', ok: true },
-        { text: 'Trust Score report', ok: true },
-        { text: 'Trust Assistant chat (Unlimited)', ok: true },
-        { text: 'Full scan history', ok: true },
-        { text: 'Training program check', ok: true },
-        { text: 'Priority AI model (Flash Pro)', ok: true },
-        { text: 'Bulk batch scanning (up to 50)', ok: true },
-        { text: 'API access (1000 req/day)', ok: true },
-        { text: 'Exportable PDF reports', ok: true },
+        { text: 'Unlimited daily scans', ok: true },
+        { text: 'Website & Recruiter Email scan', ok: true },
+        { text: 'Document scan (PDF & Image)', ok: true },
+        { text: 'AI Trust Score & Breakdown', ok: true },
+        { text: 'Permanent Cloud History Backup', ok: true },
+        { text: 'Placement Academy & Training Audit', ok: true },
+        { text: 'Priority Gemini AI Analysis', ok: true },
       ],
       cta: isPro ? 'Current Active Plan ✓' : isProLocked ? 'Capacity Full' : 'Upgrade to Pro',
       ctaStyle: isPro
@@ -697,62 +690,52 @@ export default function Landing({ onScanComplete }: LandingProps) {
               </div>
             </div>
 
-            {/* Product */}
+            {/* Navigation */}
             <div className="space-y-4">
-              <h4 className="text-xs font-bold uppercase tracking-widest text-white font-mono">Product</h4>
+              <h4 className="text-xs font-bold uppercase tracking-widest text-white font-mono">Navigation</h4>
               <ul className="space-y-2.5">
-                {['Scan Hub', 'Website Verifier', 'Email Checker', 'Document Scanner', 'Training Program Check', 'Text Analyzer'].map((item) => (
-                  <li key={item}>
-                    <a href="#" className="text-xs text-[#555] hover:text-white transition-colors flex items-center gap-1.5 group">
+                {[
+                  { name: 'Scan Hub', href: '#' },
+                  { name: 'Community Reports', href: '/community' },
+                  { name: 'User Dashboard', href: '/dashboard' },
+                  { name: 'Profile & Settings', href: '/profile' }
+                ].map((item) => (
+                  <li key={item.name}>
+                    <Link to={item.href} className="text-xs text-[#555] hover:text-white transition-colors flex items-center gap-1.5 group">
                       <ChevronRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      {item}
-                    </a>
+                      {item.name}
+                    </Link>
                   </li>
                 ))}
               </ul>
             </div>
 
-            {/* Company */}
+            {/* Platform Features */}
             <div className="space-y-4">
-              <h4 className="text-xs font-bold uppercase tracking-widest text-white font-mono">Company</h4>
+              <h4 className="text-xs font-bold uppercase tracking-widest text-white font-mono">Features</h4>
               <ul className="space-y-2.5">
-                {['About Us', 'Blog & Research', 'Threat Reports', 'Careers', 'Press Kit', 'Partners', 'Pricing'].map((item) => (
-                  <li key={item}>
-                    <a href="#" className="text-xs text-[#555] hover:text-white transition-colors flex items-center gap-1.5 group">
-                      <ChevronRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      {item}
-                    </a>
+                {[
+                  { name: 'Website Scanner', href: '#' },
+                  { name: 'Recruiter Email Verifier', href: '#' },
+                  { name: 'Document Analysis', href: '#' },
+                  { name: 'Training Academy Check', href: '#' }
+                ].map((item) => (
+                  <li key={item.name}>
+                    <span className="text-xs text-[#555] flex items-center gap-1.5">
+                      <ChevronRight className="w-3 h-3 text-[#2563EB]" />
+                      {item.name}
+                    </span>
                   </li>
                 ))}
               </ul>
             </div>
 
-            {/* Legal + Contact */}
+            {/* Platform Information */}
             <div className="space-y-4">
-              <h4 className="text-xs font-bold uppercase tracking-widest text-white font-mono">Legal & Support</h4>
-              <ul className="space-y-2.5">
-                {['Privacy Policy', 'Terms of Service', 'Cookie Policy', 'GDPR Compliance', 'API Terms', 'Report Abuse'].map((item) => (
-                  <li key={item}>
-                    <a href="#" className="text-xs text-[#555] hover:text-white transition-colors flex items-center gap-1.5 group">
-                      <ChevronRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      {item}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-              <div className="pt-2 space-y-2.5 border-t border-white/[0.05]">
-                <h4 className="text-xs font-bold uppercase tracking-widest text-white font-mono">Contact</h4>
-                <a href="mailto:support@trustforge.app" className="flex items-center gap-2 text-xs text-[#555] hover:text-white transition-colors">
-                  <Mail className="w-3.5 h-3.5" /> support@trustforge.app
-                </a>
-                <a href="tel:+911800001234" className="flex items-center gap-2 text-xs text-[#555] hover:text-white transition-colors">
-                  <Phone className="w-3.5 h-3.5" /> +91 1800-000-1234
-                </a>
-                <div className="flex items-start gap-2 text-xs text-[#555]">
-                  <MapPin className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-                  <span>Vellore, Tamil Nadu, India — 632014</span>
-                </div>
-              </div>
+              <h4 className="text-xs font-bold uppercase tracking-widest text-white font-mono">TrustForge System</h4>
+              <p className="text-xs text-[#555] leading-relaxed">
+                Deterministic security rules engine combined with Gemini AI to protect candidates and users from digital fraud and job scams.
+              </p>
             </div>
           </div>
 
