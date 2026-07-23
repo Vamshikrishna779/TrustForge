@@ -200,29 +200,17 @@ export default function Profile({ user, onLogout }: ProfileProps) {
             <Star className="w-4 h-4 text-yellow-400" /> Your Plan
           </div>
 
-          <div className={`p-4 rounded-[16px] border ${isPro ? 'bg-yellow-500/5 border-yellow-500/20' : 'bg-[#2563EB]/5 border-[#2563EB]/20'}`}>
-            <div className="flex items-center justify-between mb-3">
+          <div className={`p-4 rounded-[16px] border ${isPro ? 'bg-amber-500/10 border-amber-500/20' : 'bg-[#00A4B4]/10 border-[#00A4B4]/20'}`}>
+            <div className="flex items-center justify-between">
               <div>
-                <p className="font-extrabold text-white text-sm">{isPro ? '⭐ Pro Plan' : '🆓 Free Tier'}</p>
-                <p className="text-[10px] text-[#9E9EA4] mt-0.5">
-                  {isPro ? 'Cloud sync + priority AI analysis' : 'Local storage only · basic features'}
+                <p className="font-extrabold text-white text-sm">{isPro ? '⭐ Pro Plan' : '🆓 Free Plan'}</p>
+                <p className="text-xs text-[#8AB4CE] mt-1 font-mono">
+                  {isPro ? '30 Days Left' : 'Unlimited Free Access'}
                 </p>
               </div>
-              <span className={`text-[9px] px-2 py-0.5 rounded-[8px] font-bold border ${isPro ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' : 'bg-[#2563EB]/10 text-[#60A5FA] border-[#2563EB]/20'}`}>
-                {isPro ? 'ACTIVE PRO' : 'FREE USER'}
+              <span className={`text-[10px] px-2.5 py-1 rounded-[8px] font-bold border font-mono ${isPro ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-[#00A4B4]/20 text-[#00A4B4] border-[#00A4B4]/30'}`}>
+                {isPro ? 'PRO' : 'FREE'}
               </span>
-            </div>
-
-            {/* Plan status & expiration */}
-            <div className="pt-2 mt-2 border-t border-white/[0.05] text-[11px] space-y-1">
-              <div className="flex justify-between text-[#8AB4CE]">
-                <span>Status:</span>
-                <span className="font-bold text-white">{isPro ? 'Active Monthly Subscription' : 'Free Account'}</span>
-              </div>
-              <div className="flex justify-between text-[#8AB4CE]">
-                <span>Expires / Renews:</span>
-                <span className="font-mono text-[#00A4B4]">{isPro ? 'Monthly Auto-Renew' : 'Never (Lifetime Free)'}</span>
-              </div>
             </div>
 
             {!isPro && (

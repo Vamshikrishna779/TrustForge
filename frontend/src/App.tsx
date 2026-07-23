@@ -8,7 +8,7 @@ import Auth from './pages/Auth';
 import Settings from './pages/Settings';
 import Profile from './pages/Profile';
 import { AdminPage } from './pages/Admin';
-import { Sparkles, LayoutDashboard, MessageSquare, KeyRound, LogOut, Star, User, Menu, ShieldAlert, Download, X as CloseIcon } from 'lucide-react';
+import { Sparkles, LayoutDashboard, MessageSquare, KeyRound, LogOut, User, Menu, ShieldAlert, Download, X as CloseIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect, useRef } from 'react';
 
@@ -193,12 +193,6 @@ function Navbar({ isLoggedIn, user, onLogout }: { isLoggedIn: boolean; user: any
             {isLoggedIn && navItem('/profile', user?.display_name || 'Profile', User)}
             {isLoggedIn && user?.email === 'vamshikrishna9608@gmail.com' && navItem('/admin', 'Admin Portal', ShieldAlert, true)}
 
-            {isLoggedIn && user?.plan === 'pro' && (
-              <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[9px] font-bold uppercase tracking-wider font-mono">
-                <Star className="w-2.5 h-2.5" /> Pro
-              </div>
-            )}
-
             {isLoggedIn ? (
               <motion.button
                 whileHover={{ scale: 1.01 }}
@@ -230,12 +224,6 @@ function Navbar({ isLoggedIn, user, onLogout }: { isLoggedIn: boolean; user: any
               {navItem('/community', 'Community', MessageSquare)}
               {isLoggedIn && navItem('/profile', user?.display_name || 'Profile', User)}
               {isLoggedIn && user?.email === 'vamshikrishna9608@gmail.com' && navItem('/admin', 'Admin Portal', ShieldAlert, true)}
-
-              {isLoggedIn && user?.plan === 'pro' && (
-                <div className="flex items-center gap-1.5 px-3 py-2.5 rounded-[12px] bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-bold uppercase tracking-wider font-mono justify-center">
-                  <Star className="w-4 h-4" /> Pro Plan Active
-                </div>
-              )}
 
               {isLoggedIn ? (
                 <button
