@@ -30,17 +30,6 @@
     inset 0 1px 1px rgba(0, 164, 180, 0.1);
 }
 
-/* Light Mode Glass Card Override */
-body.light-theme .glass-card {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(0, 43, 73, 0.12);
-  box-shadow: 
-    0 8px 30px rgba(0, 43, 73, 0.06),
-    inset 0 1px 1px rgba(255, 255, 255, 0.9);
-}
-
 @utility glass-input {
   background: rgba(5, 18, 30, 0.85);
   border: 1px solid rgba(0, 164, 180, 0.15);
@@ -50,17 +39,6 @@ body.light-theme .glass-card {
     border-color: #00A4B4;
     background: rgba(6, 23, 39, 0.95);
     box-shadow: 0 0 0 1px rgba(0, 164, 180, 0.25);
-  }
-}
-
-body.light-theme .glass-input {
-  background: #FFFFFF;
-  border: 1px solid rgba(0, 43, 73, 0.18);
-  color: #002B49;
-  
-  &:focus {
-    border-color: #00A4B4;
-    box-shadow: 0 0 0 2px rgba(0, 164, 180, 0.2);
   }
 }
 
@@ -81,12 +59,6 @@ body {
   min-height: 100vh;
   margin: 0;
   overflow-x: hidden;
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-body.light-theme {
-  background-color: #F2F7FA;
-  color: #002B49;
 }
 
 /* Animated Ambient background grid glows (Deep Navy & Electric Teal) */
@@ -97,11 +69,6 @@ body.light-theme {
   pointer-events: none;
   overflow: hidden;
   background: #04101B;
-  transition: background 0.3s ease;
-}
-
-body.light-theme .ambient-glow-wrapper {
-  background: #F2F7FA;
 }
 
 .ambient-glow-shape1 {
@@ -124,37 +91,6 @@ body.light-theme .ambient-glow-wrapper {
   border-radius: 50%;
   background: radial-gradient(circle, rgba(0, 43, 73, 0.25) 0%, transparent 70%);
   filter: blur(90px);
-}
-
-body.light-theme .ambient-glow-shape1 {
-  background: radial-gradient(circle, rgba(0, 164, 180, 0.15) 0%, transparent 70%);
-}
-
-body.light-theme .ambient-glow-shape2 {
-  background: radial-gradient(circle, rgba(0, 43, 73, 0.08) 0%, transparent 70%);
-}
-
-/* Light Theme Text & Utility Overrides */
-body.light-theme nav {
-  background-color: rgba(255, 255, 255, 0.9) !important;
-  border-color: rgba(0, 43, 73, 0.1) !important;
-}
-
-body.light-theme nav .text-white,
-body.light-theme h1,
-body.light-theme h2,
-body.light-theme h3,
-body.light-theme h4,
-body.light-theme h5 {
-  color: #002B49 !important;
-}
-
-body.light-theme p,
-body.light-theme span,
-body.light-theme .text-gray-300,
-body.light-theme .text-gray-400,
-body.light-theme .text-\[\#C8C8CC\] {
-  color: #2E536E !important;
 }
 
 /* Print Layout Specifications for Export PDF */

@@ -169,7 +169,8 @@ export default function Landing({ onScanComplete }: LandingProps) {
   const handleUpgradeToPro = () => {
     const token = localStorage.getItem('tf_token');
     if (!token) {
-      setUpgradeError('Please sign in or create an account first to upgrade.');
+      // Redirect unauthenticated user to login screen directly
+      window.location.href = '/auth';
       return;
     }
     setUpgradeLoading(true);
@@ -297,7 +298,7 @@ export default function Landing({ onScanComplete }: LandingProps) {
         ? 'bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 cursor-default'
         : isProLocked
         ? 'bg-red-950/20 border border-red-900/30 text-red-400/50 cursor-not-allowed'
-        : 'bg-[#2563EB] hover:bg-blue-700 text-white shadow-[0_4px_24px_rgba(37,99,235,0.35)]',
+        : 'bg-gradient-to-r from-[#002855] to-[#0097A7] hover:from-[#003366] hover:to-[#00B4D8] text-white shadow-[0_4px_24px_rgba(0,151,167,0.35)]',
       onClick: isPro ? () => {} : handleUpgradeToPro,
       disabled: isPro || isProLocked,
     },

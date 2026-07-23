@@ -8,30 +8,14 @@ import Auth from './pages/Auth';
 import Settings from './pages/Settings';
 import Profile from './pages/Profile';
 import { AdminPage } from './pages/Admin';
-import { Sparkles, LayoutDashboard, MessageSquare, KeyRound, LogOut, Star, User, Menu, ShieldAlert, Sun, Moon, X as CloseIcon } from 'lucide-react';
+import { Sparkles, LayoutDashboard, MessageSquare, KeyRound, LogOut, Star, User, Menu, ShieldAlert, X as CloseIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 // ── Navbar ────────────────────────────────────────────────────
 function Navbar({ isLoggedIn, user, onLogout }: { isLoggedIn: boolean; user: any; onLogout: () => void }) {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
-  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
-    return (localStorage.getItem('tf_theme') as 'dark' | 'light') || 'dark';
-  });
-
-  useEffect(() => {
-    if (theme === 'light') {
-      document.body.classList.add('light-theme');
-    } else {
-      document.body.classList.remove('light-theme');
-    }
-    localStorage.setItem('tf_theme', theme);
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
-  };
 
   const isActive = (path: string) => location.pathname === path || (path === '/' && location.pathname.startsWith('/report'));
 
@@ -95,17 +79,6 @@ function Navbar({ isLoggedIn, user, onLogout }: { isLoggedIn: boolean; user: any
                 <Star className="w-2.5 h-2.5" /> Pro
               </div>
             )}
-
-            {/* Theme Toggle Button */}
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={toggleTheme}
-              className="p-2 rounded-[12px] bg-white/[0.05] border border-white/[0.08] hover:border-white/[0.2] text-[#00A4B4] transition-all cursor-pointer"
-              title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} theme`}
-            >
-              {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-[#002B49]" />}
-            </motion.button>
 
             {isLoggedIn ? (
               <motion.button
