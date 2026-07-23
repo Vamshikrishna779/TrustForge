@@ -1,0 +1,111 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #08080A;
+  --color-bg-secondary: #0F0F12;
+  --color-card-surface: rgba(22, 22, 25, 0.85);
+  --color-flat-border: rgba(255, 255, 255, 0.07);
+  
+  --color-primary: #2563EB;
+  --color-safe: #16A34A;
+  --color-warning: #F59E0B;
+  --color-danger: #DC2626;
+  
+  --color-muted-text: #9E9EA4;
+  
+  --font-sans: "Inter", sans-serif;
+  --font-heading: "Outfit", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+/* Glassmorphism card styles (combining dark overlays with light reflections) */
+@utility glass-card {
+  background: rgba(20, 20, 24, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 
+    0 4px 30px rgba(0, 0, 0, 0.4),
+    inset 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+@utility glass-input {
+  background: rgba(10, 10, 12, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.2s ease-in-out;
+  
+  &:focus {
+    border-color: #2563EB;
+    background: rgba(12, 12, 16, 0.9);
+    box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.15);
+  }
+}
+
+/* Hide scrollbar utility */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Base Body Styles */
+body {
+  background-color: #08080a;
+  color: #F3F3F5;
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+/* Animated Ambient background grid glows */
+.ambient-glow-wrapper {
+  position: fixed;
+  inset: 0;
+  z-index: -20;
+  pointer-events: none;
+  overflow: hidden;
+  background: #08080A;
+}
+
+.ambient-glow-shape1 {
+  position: absolute;
+  top: -10%;
+  left: -10%;
+  width: 50%;
+  height: 50%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.05) 0%, transparent 70%);
+  filter: blur(80px);
+}
+
+.ambient-glow-shape2 {
+  position: absolute;
+  bottom: -10%;
+  right: -10%;
+  width: 50%;
+  height: 50%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.04) 0%, transparent 70%);
+  filter: blur(80px);
+}
+
+/* Print Layout Specifications */
+@media print {
+  body {
+    background-color: white !important;
+    color: black !important;
+  }
+  nav, .print\:hidden, button, form {
+    display: none !important;
+  }
+  .glass-card {
+    background: none !important;
+    backdrop-filter: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: black !important;
+  }
+}

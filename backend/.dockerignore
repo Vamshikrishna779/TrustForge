@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+
+# Env
+.env
+*.env
+
+# DB (use Supabase in production)
+*.db
+*.sqlite3
+
+# Test files
+test_*.py
+
+# Fly.io
+fly.toml
