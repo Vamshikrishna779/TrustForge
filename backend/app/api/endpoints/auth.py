@@ -488,6 +488,18 @@ def send_admin_notification(payload: AdminNotificationRequest):
         print("Failed to send notification via Supabase:", e)
         return {"status": "success", "message": "Notification dispatched."}
 
+@router.get("/admin/logs")
+def get_admin_logs():
+    """Returns history of all dispatched admin notifications and activity logs."""
+    try:
+        sb = get_supabase()
+        res = sb.table("user_notifications").select("*").order("created_at", desc=True).limit(100).execute()
+        return res.data or []
+    except Exception as e:
+        print("Failed to fetch admin logs:", e)
+        return []
+
+
 @router.get("/notifications")
 def get_user_notifications(authorization: str = Header(default=""), user_id: str = ""):
     """Returns active in-app notifications for the authenticated user."""
