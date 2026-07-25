@@ -163,13 +163,12 @@ function Navbar({ isLoggedIn, user }: { isLoggedIn: boolean; user: any; onLogout
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
         <div className="flex items-center justify-between gap-4">
           <Link to="/" className="flex items-center gap-2.5 cursor-pointer no-underline shrink-0" onClick={() => setIsOpen(false)}>
-            <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center bg-[#0097A7]/10 border border-[#00A4B4]/30 shadow-[0_0_12px_rgba(0,164,180,0.25)]">
-              <img src="/logo.png" alt="TrustForge Logo" className="w-10 h-10 object-cover object-top scale-125" />
-            </div>
+            <img src="/logo.png" alt="TrustForge Logo" className="w-8 h-8 object-contain" />
             <span className="font-heading font-extrabold text-xl tracking-tight text-white">
               Trust<span className="text-[#00A4B4]">Forge</span>
             </span>
           </Link>
+
 
           {/* Mobile Right Actions */}
           <div className="flex items-center gap-2 sm:hidden">

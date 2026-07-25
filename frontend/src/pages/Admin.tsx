@@ -80,7 +80,9 @@ export const AdminPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'users' | 'reports' | 'logs'>('users');
   const [reports, setReports] = useState<CommunityReport[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
   const [searchTerm, setSearchTerm] = useState('');
   const [actionMsg, setActionMsg] = useState('');
 
@@ -245,7 +247,32 @@ export const AdminPage: React.FC = () => {
     });
   };
 
+  const triggerDeleteLog = (logId: string, title: string) => {
+    setDeleteModal({
+      isOpen: true,
+      title: 'Delete Audit Log Record',
+      message: `Are you sure you want to delete notification log "${title}"? This will permanently erase the log from Supabase.`,
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`${API_BASE}/api/v1/auth/notifications/${logId}`, {
+            method: 'DELETE'
+          });
+          if (!res.ok) throw new Error('Delete audit log failed');
+          setAuditLogs(prev => prev.filter(l => l.id !== logId));
+          setActionMsg('Audit log entry deleted from Supabase.');
+          setTimeout(() => setActionMsg(''), 4000);
+        } catch (err: any) {
+          setActionMsg(`⚠️ Delete log warning: ${err.message}`);
+          setTimeout(() => setActionMsg(''), 4000);
+        } finally {
+          setDeleteModal(prev => ({ ...prev, isOpen: false }));
+        }
+      }
+    });
+  };
+
   const openEmailModal = (user: SystemUser) => {
+
     const userDisplayName = user.name || (user.email.includes('@') ? user.email.split('@')[0] : 'Candidate');
     const defaultTemplate = TEMPLATE_PRESETS[0];
 
@@ -586,37 +613,61 @@ export const AdminPage: React.FC = () => {
                   </td>
                 </tr>
               ) : (
-                filteredLogs.map(log => (
-                  <tr key={log.id} className="hover:bg-white/[0.02] transition">
-                    <td className="p-4 text-gray-400 font-mono whitespace-nowrap">
-                      {new Date(log.created_at).toLocaleString()}
-                    </td>
-                    <td className="p-4 font-mono text-[#00E5FF] font-semibold">
-                      {log.user_email || log.user_id}
-                    </td>
-                    <td className="p-4">
-                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold font-mono uppercase bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
-                        {log.category || 'admin_alert'}
-                      </span>
-                    </td>
-                    <td className="p-4 max-w-sm">
-                      <div className="text-white font-bold">{log.title}</div>
-                      <div className="text-gray-400 text-[11px] font-mono truncate">{log.message}</div>
-                    </td>
-                    <td className="p-4 text-right">
-                      {log.is_read ? (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-mono text-cyan-400 bg-cyan-500/10 px-2.5 py-1 rounded-full border border-cyan-500/30 font-bold">
-                          <CheckCheck className="w-3 h-3 text-cyan-400" /> Read ✅
+                filteredLogs.map(log => {
+                  const isExpanded = expandedLogId === log.id;
+                  return (
+                    <tr
+                      key={log.id}
+                      onClick={() => setExpandedLogId(prev => prev === log.id ? null : log.id)}
+                      className="hover:bg-white/[0.04] transition cursor-pointer"
+                    >
+                      <td className="p-4 text-gray-400 font-mono whitespace-nowrap">
+                        {new Date(log.created_at).toLocaleString()}
+                      </td>
+                      <td className="p-4 font-mono text-[#00E5FF] font-semibold">
+                        {log.user_email || log.user_id}
+                      </td>
+                      <td className="p-4">
+                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold font-mono uppercase bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                          {log.category || 'admin_alert'}
                         </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-mono text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/30 font-bold">
-                          <Send className="w-3 h-3 text-amber-400" /> Delivered 🔔
-                        </span>
-                      )}
-                    </td>
+                      </td>
+                      <td className="p-4 max-w-md">
+                        <div className="text-white font-bold">{log.title}</div>
+                        <div className={`text-gray-300 text-[11px] font-mono leading-relaxed mt-1 ${isExpanded ? 'whitespace-pre-wrap' : 'line-clamp-2'}`}>
+                          {log.message}
+                        </div>
+                        {!isExpanded && log.message.length > 70 && (
+                          <span className="text-[9px] text-[#00E5FF] font-mono font-bold block pt-1 hover:underline">
+                            Click row to view full text ➔
+                          </span>
+                        )}
+                      </td>
+                      <td className="p-4 text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-2" onClick={e => e.stopPropagation()}>
+                          {log.is_read ? (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-mono text-cyan-400 bg-cyan-500/10 px-2.5 py-1 rounded-full border border-cyan-500/30 font-bold">
+                              <CheckCheck className="w-3 h-3 text-cyan-400" /> Read ✅
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-mono text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/30 font-bold">
+                              <Send className="w-3 h-3 text-amber-400" /> Delivered 🔔
+                            </span>
+                          )}
 
-                  </tr>
-                ))
+                          <button
+                            onClick={() => triggerDeleteLog(log.id, log.title)}
+                            className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 transition cursor-pointer ml-1"
+                            title="Delete audit log entry"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+
               )}
             </tbody>
           </table>
