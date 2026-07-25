@@ -8,11 +8,13 @@ import {
 } from 'lucide-react';
 import { API_BASE } from '../api';
 import { initiateProUpgrade } from '../utils/razorpay';
+import { ConfirmModal } from '../components/ConfirmModal';
 
 interface ProfileProps {
   user: any;
   onLogout: () => void;
 }
+
 
 interface ScanRecord {
   id: string;
@@ -26,6 +28,8 @@ export default function Profile({ user, onLogout }: ProfileProps) {
   const navigate = useNavigate();
   const [history, setHistory] = useState<ScanRecord[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
 
   const [profileData, setProfileData] = useState<any>(null);
 
@@ -183,21 +187,13 @@ export default function Profile({ user, onLogout }: ProfileProps) {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => navigate('/settings')}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-[12px] bg-white/[0.06] border border-white/[0.08] hover:border-white/[0.18] text-xs font-semibold text-white transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-[12px] bg-[#00A4B4]/15 border border-[#00A4B4]/30 hover:bg-[#00A4B4]/25 text-xs font-semibold text-[#00E5FF] transition-all cursor-pointer"
             >
               <Settings className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Settings</span>
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={onLogout}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-[12px] bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 text-xs font-bold text-red-400 transition-all cursor-pointer shadow-sm"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              <span>Log Out</span>
+              <span>Settings</span>
             </motion.button>
           </div>
+
         </div>
       </motion.div>
 
@@ -426,15 +422,15 @@ export default function Profile({ user, onLogout }: ProfileProps) {
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => navigate('/settings')}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-[14px] bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-bold transition-colors cursor-pointer"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-[14px] bg-[#0097A7] hover:bg-[#00B4D8] text-white text-xs font-bold transition-colors cursor-pointer shadow-md"
           >
             <Settings className="w-3.5 h-3.5" /> Account Settings
           </motion.button>
           <motion.button
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.98 }}
-            onClick={onLogout}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-[14px] bg-[#DC2626]/10 border border-[#DC2626]/20 hover:bg-[#DC2626]/20 text-[#DC2626] text-xs font-bold transition-colors cursor-pointer"
+            onClick={() => setShowLogoutConfirm(true)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-[14px] bg-[#DC2626]/10 border border-[#DC2626]/30 hover:bg-[#DC2626]/20 text-[#DC2626] text-xs font-bold transition-colors cursor-pointer"
           >
             <LogOut className="w-3.5 h-3.5" /> Sign Out
           </motion.button>
@@ -446,6 +442,18 @@ export default function Profile({ user, onLogout }: ProfileProps) {
         </div>
       </motion.div>
 
+      {/* Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showLogoutConfirm}
+        title="Confirm Sign Out"
+        message="Are you sure you want to sign out of TrustForge? For Free plan users, your locally stored scan history will remain saved on this browser device until cleared."
+        onConfirm={() => {
+          setShowLogoutConfirm(false);
+          onLogout();
+        }}
+        onClose={() => setShowLogoutConfirm(false)}
+      />
     </div>
   );
 }
+
