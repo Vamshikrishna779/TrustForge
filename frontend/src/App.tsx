@@ -227,14 +227,7 @@ function Navbar({ isLoggedIn, user }: { isLoggedIn: boolean; user: any; onLogout
               {isLoggedIn && navItem('/profile', user?.display_name || 'Profile', User)}
               {isLoggedIn && user?.email === 'vamshikrishna9608@gmail.com' && navItem('/admin', 'Admin Portal', ShieldAlert, true)}
 
-              {isLoggedIn ? (
-                <div className="pt-2 border-t border-white/[0.05] flex items-center justify-between px-2">
-                  <span className="text-xs text-gray-400 font-mono">Notifications</span>
-                  <NotificationCenter />
-                </div>
-              ) : (
-                navItem('/auth', 'Sign In', KeyRound)
-              )}
+              {!isLoggedIn && navItem('/auth', 'Sign In', KeyRound)}
 
             </motion.div>
           )}

@@ -51,6 +51,34 @@
   display: none;
 }
 
+/* Sleek Dark Electric-Teal Custom Scrollbars Everywhere */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(4, 16, 27, 0.7);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 164, 180, 0.35);
+  border-radius: 9999px;
+  border: 1px solid rgba(0, 164, 180, 0.15);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 229, 255, 0.7);
+}
+
+/* Firefox scrollbar styling */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 164, 180, 0.35) rgba(4, 16, 27, 0.7);
+}
+
+
 /* Base Body Styles */
 body {
   background-color: #04101B;

@@ -257,12 +257,15 @@ export const AdminPage: React.FC = () => {
           const res = await fetch(`${API_BASE}/api/v1/auth/notifications/${logId}`, {
             method: 'DELETE'
           });
-          if (!res.ok) throw new Error('Delete audit log failed');
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok || data.status === 'error') {
+            throw new Error(data.message || data.detail || 'Delete audit log failed');
+          }
           setAuditLogs(prev => prev.filter(l => l.id !== logId));
-          setActionMsg('Audit log entry deleted from Supabase.');
+          setActionMsg('Audit log entry deleted permanently from Supabase.');
           setTimeout(() => setActionMsg(''), 4000);
         } catch (err: any) {
-          setActionMsg(`⚠️ Delete log warning: ${err.message}`);
+          setActionMsg(`⚠️ Delete log error: ${err.message}`);
           setTimeout(() => setActionMsg(''), 4000);
         } finally {
           setDeleteModal(prev => ({ ...prev, isOpen: false }));
@@ -270,6 +273,7 @@ export const AdminPage: React.FC = () => {
       }
     });
   };
+
 
   const openEmailModal = (user: SystemUser) => {
 

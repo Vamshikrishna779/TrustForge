@@ -149,9 +149,9 @@ export const NotificationCenter: React.FC = () => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ duration: 0.18 }}
-            className="absolute -right-2 sm:right-0 mt-3 w-[calc(100vw-2rem)] sm:w-96 max-w-sm rounded-[22px] bg-[#0A2034] border border-[#00A4B4]/35 shadow-[0_10px_40px_rgba(0,0,0,0.8)] z-50 text-white overflow-hidden backdrop-blur-xl"
-
+            className="fixed sm:absolute left-2 right-2 sm:left-auto sm:right-0 top-[4.5rem] sm:top-auto sm:mt-3 w-auto sm:w-96 rounded-[22px] bg-[#0A2034] border border-[#00A4B4]/35 shadow-[0_10px_40px_rgba(0,0,0,0.8)] z-50 text-white overflow-hidden backdrop-blur-xl"
           >
+
             {/* Dropdown Header */}
             <div className="p-4 border-b border-white/[0.08] flex items-center justify-between bg-white/[0.02]">
               <div className="flex items-center gap-2">

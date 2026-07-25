@@ -618,10 +618,13 @@ def mark_notification_as_read(notification_id: str):
 def delete_notification(notification_id: str):
     try:
         sb = get_supabase()
-        sb.table("user_notifications").delete().eq("id", notification_id).execute()
-        return {"status": "success"}
+        res = sb.table("user_notifications").delete().eq("id", notification_id).execute()
+        print(f"Deleted notification {notification_id} from Supabase:", res)
+        return {"status": "success", "message": f"Notification {notification_id} deleted."}
     except Exception as e:
-        return {"status": "error", "message": str(e)}
+        print(f"Failed to delete notification {notification_id}:", e)
+        raise HTTPException(status_code=500, detail=f"Failed to delete notification: {str(e)}")
+
 
 @router.delete("/notifications/clear-all")
 def clear_all_notifications(authorization: str = Header(default="")):
