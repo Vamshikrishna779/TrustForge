@@ -113,60 +113,72 @@ export default function Dashboard({ onSelectReport }: DashboardProps) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25 }}
-      className="px-4 py-12 max-w-5xl mx-auto space-y-8 text-white relative"
+      className="px-3 sm:px-4 py-5 sm:py-10 max-w-5xl mx-auto space-y-5 sm:space-y-8 text-white relative"
     >
       {/* Page Header */}
-      <div>
-        <h2 className="text-3xl font-heading font-extrabold text-white font-sans">Security Dashboard</h2>
-        <p className="text-[#8AB4CE] text-xs mt-1">Review your recent scans and track campus scam alerts.</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl sm:text-3xl font-heading font-extrabold text-white font-sans">Security Dashboard</h2>
+          <p className="text-[#8AB4CE] text-xs mt-0.5">Review your recent scans and track scam indicators.</p>
+        </div>
+        <button
+          onClick={fetchHistory}
+          className="p-2 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] text-gray-300 text-xs font-mono flex items-center gap-1.5 cursor-pointer"
+          title="Refresh History"
+        >
+          <RefreshCw className="w-3.5 h-3.5 text-[#00A4B4]" />
+          <span className="hidden sm:inline">Refresh</span>
+        </button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="p-6 rounded-[20px] glass-card flex items-center justify-between shadow-[0_10px_30px_rgba(0,0,0,0.18)]">
-          <div className="space-y-1">
-            <p className="text-[10px] text-[#8AB4CE] uppercase tracking-widest font-mono font-bold">Total Scans</p>
-            <p className="text-4xl font-mono font-extrabold text-white mt-1">{totalScans}</p>
+      {/* Responsive Stats Cards Grid (3-Column on mobile) */}
+      <div className="grid grid-cols-3 gap-2.5 sm:gap-6">
+        <div className="p-3.5 sm:p-6 rounded-[18px] sm:rounded-[20px] glass-card flex flex-col sm:flex-row items-center sm:justify-between text-center sm:text-left gap-2 shadow-[0_10px_30px_rgba(0,0,0,0.18)]">
+          <div className="space-y-0.5 sm:space-y-1">
+            <p className="text-[9px] sm:text-[10px] text-[#8AB4CE] uppercase tracking-widest font-mono font-bold">Total Scans</p>
+            <p className="text-2xl sm:text-4xl font-mono font-extrabold text-white">{totalScans}</p>
           </div>
-          <div className="p-3 bg-[#0A2034] border border-[#00A4B4]/20 text-[#00A4B4] rounded-[16px]">
-            <FileText className="w-5 h-5" />
-          </div>
-        </div>
-
-        <div className="p-6 rounded-[20px] glass-card flex items-center justify-between shadow-[0_10px_30px_rgba(0,0,0,0.18)]">
-          <div className="space-y-1">
-            <p className="text-[10px] text-[#8AB4CE] uppercase tracking-widest font-mono font-bold">Scams Flagged</p>
-            <p className="text-4xl font-mono font-extrabold text-[#EF4444] mt-1">{criticalScams}</p>
-          </div>
-          <div className="p-3 bg-red-950/20 border border-red-500/20 text-[#EF4444] rounded-[16px]">
-            <ShieldAlert className="w-5 h-5" />
+          <div className="p-2 sm:p-3 bg-[#0A2034] border border-[#00A4B4]/20 text-[#00A4B4] rounded-[12px] sm:rounded-[16px] shrink-0">
+            <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
         </div>
 
-        <div className="p-6 rounded-[20px] glass-card flex items-center justify-between shadow-[0_10px_30px_rgba(0,0,0,0.18)]">
-          <div className="space-y-1">
-            <p className="text-[10px] text-[#8AB4CE] uppercase tracking-widest font-mono font-bold">Safe Verified</p>
-            <p className="text-4xl font-mono font-extrabold text-[#10B981] mt-1">{safeOffers}</p>
+        <div className="p-3.5 sm:p-6 rounded-[18px] sm:rounded-[20px] glass-card flex flex-col sm:flex-row items-center sm:justify-between text-center sm:text-left gap-2 shadow-[0_10px_30px_rgba(0,0,0,0.18)]">
+          <div className="space-y-0.5 sm:space-y-1">
+            <p className="text-[9px] sm:text-[10px] text-[#8AB4CE] uppercase tracking-widest font-mono font-bold">Flagged</p>
+            <p className="text-2xl sm:text-4xl font-mono font-extrabold text-[#EF4444]">{criticalScams}</p>
           </div>
-          <div className="p-3 bg-emerald-950/20 border border-emerald-500/20 text-[#10B981] rounded-[16px]">
-            <ShieldCheck className="w-5 h-5" />
+          <div className="p-2 sm:p-3 bg-red-950/20 border border-red-500/20 text-[#EF4444] rounded-[12px] sm:rounded-[16px] shrink-0">
+            <ShieldAlert className="w-4 h-4 sm:w-5 sm:h-5" />
+          </div>
+        </div>
+
+        <div className="p-3.5 sm:p-6 rounded-[18px] sm:rounded-[20px] glass-card flex flex-col sm:flex-row items-center sm:justify-between text-center sm:text-left gap-2 shadow-[0_10px_30px_rgba(0,0,0,0.18)]">
+          <div className="space-y-0.5 sm:space-y-1">
+            <p className="text-[9px] sm:text-[10px] text-[#8AB4CE] uppercase tracking-widest font-mono font-bold">Safe</p>
+            <p className="text-2xl sm:text-4xl font-mono font-extrabold text-[#10B981]">{safeOffers}</p>
+          </div>
+          <div className="p-2 sm:p-3 bg-emerald-950/20 border border-emerald-500/20 text-[#10B981] rounded-[12px] sm:rounded-[16px] shrink-0">
+            <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
         </div>
       </div>
 
-      {/* Scan History Table */}
-      <div className="p-6 rounded-[20px] glass-card space-y-4">
+      {/* Scan History Table Card */}
+      <div className="p-4 sm:p-6 rounded-[20px] glass-card space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/[0.08] pb-3">
-          <h4 className="font-heading font-semibold text-md text-white">Scans History ({filteredHistory.length})</h4>
+          <h4 className="font-heading font-semibold text-sm sm:text-md text-white flex items-center justify-between">
+            <span>Scan Records ({filteredHistory.length})</span>
+          </h4>
           
-          {/* Category Filter Tabs */}
-          <div className="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0">
-            <Filter className="w-3.5 h-3.5 text-[#00A4B4] shrink-0 mr-1" />
+          {/* Scrollable Category Filter Pills */}
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 sm:pb-0 max-w-full">
+            <Filter className="w-3.5 h-3.5 text-[#00A4B4] shrink-0 mr-0.5" />
             {['all', 'website', 'email', 'document', 'text', 'training'].map((cat) => (
               <button
                 key={cat}
                 onClick={() => setSelectedFilter(cat)}
-                className={`px-2.5 py-1 rounded-lg text-[10px] font-bold font-mono uppercase transition ${
+                className={`px-3 py-1 rounded-lg text-[10px] font-bold font-mono uppercase shrink-0 transition cursor-pointer select-none ${
                   selectedFilter === cat
                     ? 'bg-[#00A4B4] text-white shadow-md'
                     : 'bg-white/[0.04] text-gray-400 hover:text-white'
@@ -200,44 +212,58 @@ export default function Dashboard({ onSelectReport }: DashboardProps) {
                   key={scan.id}
                   whileHover="hover"
                   onClick={() => handleSelectReport(scan.id)}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between py-4 cursor-pointer hover:bg-white/[0.02] transition-colors rounded-[12px] px-3 gap-2 group"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between py-3.5 cursor-pointer hover:bg-white/[0.02] transition-colors rounded-[14px] px-2.5 sm:px-3 gap-2.5 group"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="p-2.5 bg-[#0A2034] border border-[#00A4B4]/20 rounded-[12px] text-[#00A4B4]">
+                  {/* Top / Main info */}
+                  <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
+                    <div className="p-2.5 bg-[#0A2034] border border-[#00A4B4]/20 rounded-[12px] text-[#00A4B4] shrink-0 mt-0.5 sm:mt-0">
                       <FileText className="w-4 h-4" />
                     </div>
-                    <div className="space-y-0.5">
-                      <p className="font-semibold text-xs text-white transition-colors truncate max-w-[280px] sm:max-w-[400px]">
-                        {scan.input_data}
-                      </p>
+
+                    <div className="space-y-1 flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold text-xs text-white truncate max-w-[200px] sm:max-w-[380px]">
+                          {scan.input_data}
+                        </p>
+                        <span className="uppercase text-[9px] px-1.5 py-0.5 bg-[#0A2034] border border-[#00A4B4]/20 text-[#00E5FF] rounded-[6px] font-bold font-mono shrink-0">
+                          {scan.analysis_details?.category || scan.type.replace('_', ' ')}
+                        </span>
+                      </div>
+
+                      {scan.ai_summary && (
+                        <p className="text-[11px] text-gray-300 line-clamp-1 font-light pr-2">
+                          {scan.ai_summary}
+                        </p>
+                      )}
+
                       <div className="flex items-center gap-3 text-[10px] text-[#8AB4CE] font-mono">
                         <span className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3" />
+                          <Calendar className="w-3 h-3 text-gray-400" />
                           {new Date(scan.created_at).toLocaleDateString()}
-                        </span>
-                        <span className="uppercase text-[9px] px-1.5 py-0.5 bg-[#0A2034] border border-[#00A4B4]/20 text-[#00A4B4] rounded-[6px] font-bold">
-                          {scan.analysis_details?.category || scan.type.replace('_', ' ')}
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 mt-3 sm:mt-0 justify-between sm:justify-end">
-                    <div className={`px-2.5 py-0.5 rounded-[12px] text-[10px] font-mono font-bold border ${badgeColor}`}>
+                  {/* Actions & Badge */}
+                  <div className="flex items-center gap-2.5 justify-between sm:justify-end shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-white/[0.04]">
+                    <div className={`px-2.5 py-1 rounded-[10px] text-[10px] font-mono font-bold border ${badgeColor}`}>
                       {verdictText} ({score}/100)
                     </div>
                     
-                    <button
-                      onClick={(e) => triggerDeleteScan(e, scan.id)}
-                      className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 transition cursor-pointer"
-                      title="Delete scan history record"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={(e) => triggerDeleteScan(e, scan.id)}
+                        className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 transition cursor-pointer"
+                        title="Delete scan history record"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
 
-                    <motion.div variants={{ hover: { x: 3 } }} transition={{ duration: 0.2 }}>
-                      <ArrowRight className="w-4 h-4 text-gray-500 hover:text-white" />
-                    </motion.div>
+                      <motion.div variants={{ hover: { x: 3 } }} transition={{ duration: 0.2 }}>
+                        <ArrowRight className="w-4 h-4 text-gray-500 group-hover:text-white" />
+                      </motion.div>
+                    </div>
                   </div>
                 </motion.div>
               );
@@ -250,6 +276,7 @@ export default function Dashboard({ onSelectReport }: DashboardProps) {
           </div>
         )}
       </div>
+
 
       <ConfirmModal
         isOpen={deleteModal.isOpen}
