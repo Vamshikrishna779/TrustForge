@@ -575,16 +575,24 @@ def get_user_notifications(authorization: str = Header(default=""), user_id: str
         res = sb.table("user_notifications").select("*").order("created_at", desc=True).limit(50).execute()
         raw_list = res.data or []
 
+        is_admin_user = u_email == "vamshikrishna9608@gmail.com"
+
         data = []
         for n in raw_list:
             nid = str(n.get("user_id", "")).strip()
             nemail = str(n.get("user_email", "")).strip().lower()
+            ncat = str(n.get("category", "")).strip()
             
-            # Match by user_id, user_email, or broadcast ('all'/'global')
-            if nid in (u_id, "all", "global") or (u_email and nemail == u_email):
+            # Match by user_id, user_email, broadcast ('all'/'global'), or admin alerts for admin account
+            if (
+                nid in (u_id, "all", "global") 
+                or (u_email and nemail == u_email)
+                or (is_admin_user and (nid == "admin_alert" or ncat == "admin_alert"))
+            ):
                 data.append(n)
 
         unread_count = sum(1 for n in data if not n.get("is_read"))
+
 
         return {"notifications": data, "unread_count": unread_count}
     except Exception as e:
