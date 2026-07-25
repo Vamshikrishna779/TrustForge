@@ -253,8 +253,40 @@ export default function App() {
     return stored ? JSON.parse(stored) : null;
   });
 
-  // Sync profile & plan live from Supabase backend on mount
+  // Sync profile & plan live from Supabase backend on mount + parse Google OAuth tokens
   useEffect(() => {
+    // 1. Process Google OAuth hash if present in URL (e.g. #access_token=...)
+    const hash = window.location.hash;
+    if (hash && hash.includes('access_token=')) {
+      const params = new URLSearchParams(hash.replace('#', '?'));
+      const accessToken = params.get('access_token');
+      if (accessToken) {
+        fetch(`${API_BASE}/api/v1/auth/profile`, {
+          headers: { Authorization: `Bearer ${accessToken}` }
+        })
+          .then(res => res.ok ? res.json() : null)
+          .then(profile => {
+            if (profile && profile.id) {
+              const updated = {
+                id: profile.id,
+                email: profile.email,
+                display_name: profile.display_name,
+                plan: profile.plan || 'free'
+              };
+              localStorage.setItem('tf_token', accessToken);
+              localStorage.setItem('tf_user', JSON.stringify(updated));
+              setUser(updated);
+              setIsLoggedIn(true);
+              // Clean hash from URL
+              window.history.replaceState(null, '', window.location.pathname);
+            }
+          })
+          .catch(() => {});
+        return;
+      }
+    }
+
+    // 2. Otherwise restore existing session token from localStorage
     const token = localStorage.getItem('tf_token');
     if (!token) return;
 
