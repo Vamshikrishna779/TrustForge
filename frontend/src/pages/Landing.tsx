@@ -294,17 +294,21 @@ export default function Landing({ onScanComplete }: LandingProps) {
   };
 
   const handleChipClick = (tab: ScanTab, item: any) => {
-    setActiveTab(tab);
     setErrorMsg('');
 
     if (typeof item === 'string') {
+      setActiveTab(tab);
       setSearchVal(item);
     } else if (item && typeof item === 'object') {
       const fullContent = item.full_text || item.description || item.val || item.title || '';
+      
+      // If content is multi-sentence scam text, route to Text tab for full context
+      const targetTab = (tab === 'email' && !item.val?.includes('@')) ? 'text' : (item.tab || tab);
+      setActiveTab(targetTab as ScanTab);
 
-      if (tab === 'text') {
+      if (targetTab === 'text') {
         setSearchVal(fullContent);
-      } else if (tab === 'training') {
+      } else if (targetTab === 'training') {
         setSearchVal(item.val || item.title || 'Placement Academy');
         setAcademyUrl(item.url || '');
         setAcademyDetails(item.description || fullContent);
@@ -315,6 +319,7 @@ export default function Landing({ onScanComplete }: LandingProps) {
 
     scannerRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
 
 
   const containerVariants = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1 } } };

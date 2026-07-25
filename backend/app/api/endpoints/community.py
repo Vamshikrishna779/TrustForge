@@ -6,8 +6,10 @@ from app.services.supabase_client import get_supabase
 router = APIRouter()
 
 from fastapi import Header
+import re
 import json
 from app.services.gemini import generate_content_with_fallback, settings
+
 
 class CommunityReportCreate(BaseModel):
     title: str
@@ -259,10 +261,11 @@ def get_quick_scan_threats():
             scan_tab = "text"
             if "url" in cat.lower() or "http" in title.lower() or "http" in desc.lower() or ".net" in title.lower() or ".xyz" in title.lower():
                 scan_tab = "website"
-            elif "email" in cat.lower() or "@" in title.lower() or "@" in desc.lower():
+            elif re.search(r'[\w\.-]+@[\w\.-]+\.[a-zA-Z]{2,}', title + " " + desc):
                 scan_tab = "email"
             elif "academy" in cat.lower() or "training" in cat.lower() or "placement" in cat.lower():
                 scan_tab = "training"
+
 
             threats.append({
                 "id": item.get("id"),
