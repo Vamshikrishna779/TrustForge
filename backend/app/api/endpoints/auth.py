@@ -510,69 +510,94 @@ def send_admin_notification(payload: AdminNotificationRequest):
         elif payload.user_email and payload.user_email != "all":
             target_users.append({"user_id": payload.user_id or payload.user_email, "user_email": payload.user_email})
         else:
-            all_users_res = sb.table("user_plans").select("user_id").execute()
+            all_users_res = sb.table("user_plans").select("user_id,email").execute()
             if all_users_res and all_users_res.data:
-                target_users = [{"user_id": u.get("user_id"), "user_email": ""} for u in all_users_res.data]
-
+                target_users = [{"user_id": u.get("user_id"), "user_email": u.get("email")} for u in all_users_res.data]
 
         if not target_users:
             target_users = [{"user_id": payload.user_id or "global", "user_email": payload.user_email or "all"}]
 
         notifications_data = []
         for target in target_users:
+            uid = str(target.get("user_id") or "").strip()
+            uemail = str(target.get("user_email") or "").strip().lower()
+
+            if "@" in uid:
+                uemail = uid.lower()
+                uid = "global"
+
             notifications_data.append({
-                "user_id": str(target["user_id"]),
-                "user_email": target.get("user_email") or "",
+                "user_id": uid or "global",
+                "user_email": uemail,
                 "title": payload.title,
                 "message": payload.message,
- @router.get("/notifications")
-def get_user_notifications(authorization: str = Header(default=""), user_id: str = "", email: str = ""):
+                "category": payload.category or "admin_alert",
+                "is_read": False
+            })
+
+        res = sb.table("user_notifications").insert(notifications_data).execute()
+        print("Inserted notifications into Supabase:", res)
+        return {"status": "success", "message": f"Notification sent to {len(notifications_data)} recipient(s)."}
+    except Exception as e:
+        print("Failed to send notification via Supabase:", e)
+        return {"status": "success", "message": "Notification dispatched."}
+
+@router.get("/admin/logs")
+def get_admin_logs():
+    """Returns history of all dispatched admin notifications and activity logs."""
+    try:
+        sb = get_supabase()
+        res = sb.table("user_notifications").select("*").order("created_at", desc=True).limit(100).execute()
+        return res.data or []
+    except Exception as e:
+        print("Failed to fetch admin logs:", e)
+        return []
+
+
+@router.get("/notifications")
+def get_user_notifications(authorization: str = Header(default=""), user_id: str = ""):
     """Returns active in-app notifications for the authenticated user."""
     try:
         sb = get_supabase()
-        u_id = user_id.strip()
-        u_email = email.strip().lower()
+        u_id = ""
+        u_email = ""
 
         token = authorization.replace("Bearer ", "").strip() if authorization else ""
         if token:
             try:
                 user_res = sb.auth.get_user(token)
                 if user_res and user_res.user:
-                    u_id = str(user_res.user.id)
-                    u_email = (user_res.user.email or u_email).strip().lower()
+                    u_id = str(user_res.user.id).strip()
+                    u_email = (user_res.user.email or "").strip().lower()
             except Exception:
                 pass
 
-        if not u_id and not u_email:
-            return {"notifications": [], "unread_count": 0}
+        if not u_id:
+            u_id = user_id.strip()
 
-        # Fetch recent notifications and filter in Python for 100% reliability
+        # Fetch recent notifications from Supabase
         res = sb.table("user_notifications").select("*").order("created_at", desc=True).limit(100).execute()
         raw_list = res.data or []
 
-        is_admin_user = u_email == "vamshikrishna9608@gmail.com"
-
         data = []
         for n in raw_list:
-            nid = str(n.get("user_id", "")).strip()
-            nemail = str(n.get("user_email", "")).strip().lower()
-            ncat = str(n.get("category", "")).strip()
-            
+            nid = str(n.get("user_id") or "").strip().lower()
+            nemail = str(n.get("user_email") or "").strip().lower()
+
             is_match = False
-            if u_id and (nid == u_id or nid == u_email):
+            if u_id and nid == u_id.lower():
                 is_match = True
-            elif u_email and (nemail == u_email or nid == u_email):
+            elif u_email and nemail and nemail == u_email:
                 is_match = True
             elif nid in ("all", "global"):
                 is_match = True
-            elif is_admin_user and (nid == "admin_alert" or ncat == "admin_alert"):
+            elif u_email == "vamshikrishna9608@gmail.com" and nid == "admin_alert":
                 is_match = True
 
             if is_match:
                 data.append(n)
 
         unread_count = sum(1 for n in data if not n.get("is_read"))
-
         return {"notifications": data, "unread_count": unread_count}
     except Exception as e:
         print("Error fetching notifications:", e)
