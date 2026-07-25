@@ -87,6 +87,77 @@ export default function Landing({ onScanComplete }: LandingProps) {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
+  // Interactive Scam Tour & Knowledge Hub state
+  const [activeTourIndex, setActiveTourIndex] = useState(0);
+  const [expandedGuideIndex, setExpandedGuideIndex] = useState<number | null>(null);
+
+  const tourScenarios = [
+    {
+      title: '📱 WhatsApp Task Scam',
+      type: 'Text Message',
+      input: '"Earn ₹3,500/day liking YouTube videos! Contact Telegram @task_manager to claim your ₹150 instant bonus."',
+      heuristics: [
+        { label: 'Out-of-Band Telegram Chat', status: 'flagged', detail: 'Redirects candidate to Telegram @task_manager' },
+        { label: 'Prepaid Review Task Pattern', status: 'flagged', detail: 'Promises money for basic rating tasks' },
+        { label: 'Unsolicited WhatsApp Message', status: 'flagged', detail: 'Unknown sender requesting quick task payout' }
+      ],
+      score: 12,
+      badge: 'Telegram Task Scam',
+      summary: 'CRITICAL RISK: Classic prepaid review task trap. Scammers promise small initial payouts before demanding large deposits to unlock earnings.'
+    },
+    {
+      title: '📄 Fake Offer Letter PDF',
+      type: 'PDF Document',
+      input: 'Appointment Letter PDF with forged company seal. Demands refundable laptop equipment fee via personal UPI handle hr-dept@ybl.',
+      heuristics: [
+        { label: 'Upfront Payment Request', status: 'flagged', detail: 'Demands upfront deposit prior to onboarding' },
+
+        { label: 'Free-Mail HR Contact', status: 'flagged', detail: 'Sender email uses generic free domain' },
+        { label: 'Unregistered UPI ID', status: 'flagged', detail: 'Personal UPI handle attached to corporate offer' }
+      ],
+      score: 15,
+      badge: 'Upfront Fee Fraud',
+      summary: 'HIGH RISK: Fraudulent offer letter. Legitimate employers never charge candidates security deposits for laptops or equipment.'
+    },
+    {
+      title: '🌐 Phishing Login Portal',
+      type: 'Website URL',
+      input: 'https://official-candidate-verify-login.xyz (Requesting Aadhaar number & OTP to download offer letter)',
+      heuristics: [
+        { label: 'Domain Age Check', status: 'flagged', detail: 'Domain registered only 2 days ago' },
+        { label: 'Suspicious TLD Extension', status: 'flagged', detail: 'Uses non-standard .xyz domain' },
+        { label: 'Credential Harvesting', status: 'flagged', detail: 'Prompts for sensitive identity credentials' }
+      ],
+      score: 8,
+      badge: 'Phishing Credential Portal',
+      summary: 'CRITICAL RISK: Phishing clone website created to steal Aadhaar identity data and OTPs. Do not enter credentials.'
+    }
+  ];
+
+  const knowledgeHubGuides = [
+    {
+      title: '🛡️ How to Spot Fake Offer Letters & Forged Seals',
+      summary: 'Identify forged corporate stamps, generic HR email senders, and hidden upfront fee demands.',
+      details: 'Real corporate offer letters originate from official domain emails (e.g. hr@company.com), never generic Gmail or Yahoo accounts. Genuine employers never charge candidates laptop fees, training deposits, or document processing charges.'
+    },
+    {
+      title: '🚩 Telegram "Prepaid Review Task" Scam Pattern',
+      summary: 'How scammers trick candidates with small initial payouts before stealing high deposit amounts.',
+      details: 'Scammers message you on WhatsApp offering ₹150 for liking 3 YouTube videos. Once you join Telegram, they demand ₹2,000 to unlock "VIP tasks". Never deposit money to receive job earnings.'
+    },
+    {
+      title: '💳 UPI Security Deposit & Registration Fee Red Flags',
+      summary: 'Why no legitimate Indian employer will ask for UPI transfers prior to joining.',
+      details: 'Any request to send money via UPI (e.g. name@okaxis, HR@ybl) for interview registration, ID card creation, or laptop shipping is 100% advance-fee fraud.'
+    },
+    {
+      title: '📧 Official Email Domains vs Free-Mail Impersonators',
+      summary: 'Checking SPF, DKIM, and domain WHOIS age before trusting a recruiter email.',
+      details: 'Scammers frequently create domains that look like real companies with minor typos. Always inspect the exact domain URL and avoid replying to free-mail senders.'
+    }
+  ];
+
+
   // Pro Upgrade & Capacity Lock State
   const [isProLocked, setIsProLocked] = useState(false);
   const [upgradeMsg, setUpgradeMsg] = useState('');
@@ -633,6 +704,97 @@ export default function Landing({ onScanComplete }: LandingProps) {
           </div>
         </motion.section>
 
+        {/* ── 4.5 INTERACTIVE SCAM TOUR ─────────────────────────── */}
+
+        <motion.section variants={itemVariants} className="space-y-6">
+          <div className="text-center space-y-2">
+            <p className="text-[11px] font-mono text-[#00E5FF] uppercase tracking-widest">Interactive Product Tour</p>
+            <h2 className="text-2xl sm:text-3xl font-heading font-extrabold text-white">See How AI Detects Scams in Real Time</h2>
+            <p className="text-xs sm:text-sm text-[#8AB4CE] max-w-lg mx-auto">Click any real-world scam scenario below to inspect how our deterministic rule engine & AI compile a safety report.</p>
+          </div>
+
+          {/* Scenario Tabs */}
+          <div className="flex flex-wrap justify-center gap-2">
+            {tourScenarios.map((sc, idx) => (
+              <button
+                key={idx}
+                onClick={() => setActiveTourIndex(idx)}
+                className={`px-4 py-2 rounded-[14px] text-xs font-semibold transition-all cursor-pointer ${
+                  activeTourIndex === idx
+                    ? 'bg-[#0097A7] text-white shadow-[0_4px_20px_rgba(0,151,167,0.35)]'
+                    : 'bg-[#0A2034]/70 border border-white/[0.06] text-gray-400 hover:text-white'
+                }`}
+              >
+                {sc.title}
+              </button>
+            ))}
+          </div>
+
+          {/* Tour Card Display */}
+          {(() => {
+            const currentScenario = tourScenarios[activeTourIndex];
+            return (
+              <div className="p-6 sm:p-8 rounded-[24px] bg-[#070D14] border border-[#00A4B4]/30 space-y-6 shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                  {/* Left Column: Sample Input */}
+                  <div className="lg:col-span-6 space-y-4 border-b lg:border-b-0 lg:border-r border-white/[0.08] pb-5 lg:pb-0 lg:pr-6">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] uppercase font-mono font-bold text-[#00E5FF]">Sample Candidate Input</span>
+                      <span className="text-[10px] font-mono text-gray-400">{currentScenario.type}</span>
+                    </div>
+                    <div className="p-4 rounded-[16px] bg-[#0D1B2A] border border-white/[0.06] text-xs text-gray-200 font-mono leading-relaxed">
+                      {currentScenario.input}
+                    </div>
+
+                    <div className="space-y-2">
+                      <span className="text-[10px] uppercase font-mono font-bold text-gray-400">Flagged Rule Indicators:</span>
+                      <div className="space-y-2">
+                        {currentScenario.heuristics.map((h, i) => (
+                          <div key={i} className="p-2.5 rounded-[12px] bg-red-950/30 border border-red-900/30 flex items-start gap-2.5 text-xs">
+                            <span className="text-red-400 font-bold font-mono text-[10px] shrink-0 uppercase mt-0.5">🚩 FLAGGED</span>
+                            <div>
+                              <p className="font-bold text-red-200">{h.label}</p>
+                              <p className="text-[11px] text-red-300/80">{h.detail}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Column: AI Output */}
+                  <div className="lg:col-span-6 space-y-5 flex flex-col justify-between">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] uppercase font-mono font-bold text-[#00E5FF]">TrustForge AI Verdict</span>
+                        <span className="px-2.5 py-0.5 rounded-[6px] bg-red-950 border border-red-500/40 text-red-400 font-bold font-mono text-[10px] uppercase">
+                          {currentScenario.badge}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-4 p-4 rounded-[16px] bg-[#0D1B2A] border border-white/[0.06]">
+                        <div className="text-center shrink-0">
+                          <span className="text-3xl font-mono font-extrabold text-red-500">{currentScenario.score}</span>
+                          <span className="block text-[9px] uppercase font-mono text-gray-400">Trust Score</span>
+                        </div>
+                        <div className="border-l border-white/[0.08] pl-4 text-xs text-gray-200 leading-relaxed">
+                          {currentScenario.summary}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-3 rounded-[12px] bg-[#0097A7]/10 border border-[#0097A7]/30 text-xs text-[#00E5FF] font-mono flex items-center justify-between">
+                      <span>⚡ Verification Time: 0.4 seconds</span>
+                      <span className="text-emerald-400 font-bold">Passed Security Rules ✓</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+        </motion.section>
+
+
         {/* ── 5. THREAT CATEGORIES ────────────────────────────── */}
         <motion.section variants={itemVariants} className="space-y-8">
           <div className="text-center space-y-2">
@@ -660,7 +822,49 @@ export default function Landing({ onScanComplete }: LandingProps) {
           </div>
         </motion.section>
 
+        {/* ── 5.5 SCAM PREVENTION & KNOWLEDGE HUB ────────────────── */}
+
+        <motion.section variants={itemVariants} className="space-y-6">
+          <div className="text-center space-y-2">
+            <p className="text-[11px] font-mono text-[#00E5FF] uppercase tracking-widest">Candidate Cyber Safety</p>
+            <h2 className="text-2xl sm:text-3xl font-heading font-extrabold text-white">Scam Prevention & Threat Knowledge Hub</h2>
+            <p className="text-xs sm:text-sm text-[#8AB4CE] max-w-xl mx-auto">Essential security breakdowns to help job seekers identify hiring fraud before engaging with scammers.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {knowledgeHubGuides.map((guide, idx) => {
+              const isExpanded = expandedGuideIndex === idx;
+              return (
+                <div
+                  key={idx}
+                  onClick={() => setExpandedGuideIndex(isExpanded ? null : idx)}
+                  className="p-5 sm:p-6 rounded-[22px] bg-[#0A2034]/70 border border-[#00A4B4]/30 space-y-3 cursor-pointer hover:border-[#00E5FF]/60 transition-all"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <h4 className="font-heading font-bold text-white text-sm sm:text-base flex-1">{guide.title}</h4>
+                    <span className="text-xs font-mono text-[#00E5FF] px-2 py-0.5 rounded-full bg-[#0097A7]/20 shrink-0">
+                      {isExpanded ? 'Hide ▲' : 'Read Guide ▼'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-300 font-light leading-relaxed">{guide.summary}</p>
+                  
+                  {isExpanded && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      className="pt-3 border-t border-white/[0.08] text-xs text-[#8AB4CE] font-mono leading-relaxed bg-[#070D14]/80 p-3 rounded-[14px]"
+                    >
+                      💡 <strong className="text-white font-bold">Security Breakdown:</strong> {guide.details}
+                    </motion.div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </motion.section>
+
         {/* ── 6. PRICING ──────────────────────────────────────── */}
+
         <motion.section variants={itemVariants} className="space-y-8" id="pricing">
           <div className="text-center space-y-2">
             <p className="text-[11px] font-mono text-[#00A4B4] uppercase tracking-widest">Pricing</p>
