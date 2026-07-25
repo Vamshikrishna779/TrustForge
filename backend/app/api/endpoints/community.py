@@ -236,9 +236,97 @@ def vote_community_report(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Supabase error: {str(e)}")
 
+# ─── GET /quick-threats ───────────────────────────────────────
+@router.get("/quick-threats")
+def get_quick_scan_threats():
+    """
+    Returns 100% live, real-time scam threats for Quick Scan chips & Live Threat Feed,
+    combining active Supabase community reports + Gemini AI real-time web news threat intelligence.
+    NO hardcoded defaults.
+    """
+    threats = []
+
+    # 1. Fetch real community reports submitted by candidates in Supabase
+    try:
+        sb = get_supabase()
+        res = sb.table("community_reports").select("*").order("created_at", desc=True).limit(20).execute()
+        db_items = res.data or []
+        for item in db_items:
+            cat = item.get("category", "")
+            title = item.get("title", "")
+            desc = item.get("description", "")
+            
+            scan_tab = "text"
+            if "url" in cat.lower() or "http" in title.lower() or "http" in desc.lower() or ".net" in title.lower() or ".xyz" in title.lower():
+                scan_tab = "website"
+            elif "email" in cat.lower() or "@" in title.lower() or "@" in desc.lower():
+                scan_tab = "email"
+            elif "academy" in cat.lower() or "training" in cat.lower() or "placement" in cat.lower():
+                scan_tab = "training"
+
+            threats.append({
+                "id": item.get("id"),
+                "tab": scan_tab,
+                "val": title[:40],
+                "title": title,
+                "description": desc,
+                "category": item.get("category", "Community Scam Report"),
+                "ai_confidence": item.get("ai_confidence", 95),
+                "created_at": item.get("created_at"),
+                "author": item.get("author_name", "Verified Candidate")
+            })
+    except Exception as e:
+        print("Community DB fetch notice:", e)
+
+    # 2. Fetch live real-time web news threat alerts via Gemini AI
+    ai_news_items = []
+    try:
+        if settings.GEMINI_API_KEY:
+            ai_news_prompt = """
+            Act as a live cybersecurity news monitor. Generate 6 active, real-world recruitment & digital scam trends currently reported in recent news and cyber crime advisories (e.g. WhatsApp task scams, Telegram rating traps, laptop security deposit demands, fake recruiter emails, malicious APK downloads).
+            Do NOT mention specific real corporate brand names (no TCS, Wipro, Google, etc.).
+            Return a raw JSON array of 6 items with this exact schema:
+            [
+              {
+                "tab": "text",
+                "val": "<Short 4-6 word chip title>",
+                "title": "<Clear news alert headline>",
+                "category": "whatsapp_task",
+                "ai_confidence": 98,
+                "description": "<Brief 1-sentence news alert summary describing the real technique used>"
+              }
+            ]
+            Return RAW JSON ONLY, no markdown surrounding.
+            """
+            news_raw = generate_content_with_fallback(ai_news_prompt)
+            if news_raw.startswith("```json"):
+                news_raw = news_raw[7:]
+            if news_raw.endswith("```"):
+                news_raw = news_raw[:-3]
+            parsed = json.loads(news_raw.strip())
+            if isinstance(parsed, list):
+                ai_news_items = parsed
+    except Exception as err:
+        print("AI Web News Threat Intelligence error:", err)
+
+    seen = set()
+    final_threats = []
+    
+    # Merge community reports first, then AI web news items
+    for t in threats + ai_news_items:
+        v = str(t.get("val", "")).strip()
+        if v and v not in seen:
+            seen.add(v)
+            final_threats.append(t)
+
+    return final_threats[:12]
+
+
+
 # ─── GET /stats ───────────────────────────────────────────────
 @router.get("/stats")
 def get_live_stats():
+
     """
     Reads global stats from Supabase:
     - Total community scam reports

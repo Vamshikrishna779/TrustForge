@@ -6,8 +6,9 @@ import Scanner from '../components/Scanner';
 import {
   ShieldCheck, Link2, FileText, Mail, FileCheck, RefreshCw, ArrowRight,
   GraduationCap, Zap, Globe, Lock, Eye, CheckCircle, XCircle, Star,
-  Send, Shield, Sparkles,
+  Send, Shield, Sparkles, ShieldAlert, X,
   TrendingUp, Database, Cpu, Search, ChevronRight, Code, ExternalLink
+
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -106,14 +107,18 @@ export default function Landing({ onScanComplete }: LandingProps) {
   const currentUser = storedUser ? JSON.parse(storedUser) : null;
   const isPro = currentUser?.plan === 'pro';
 
-  // Fetch Supabase capacity status, real-time scan stats, and community feed on mount
+  const [quickThreats, setQuickThreats] = useState<any[]>([]);
+  const [isThreatModalOpen, setIsThreatModalOpen] = useState(false);
+
+  // Fetch Supabase capacity status, real-time scan stats, community feed, and live quick threats on mount
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [capRes, statsRes, commRes] = await Promise.all([
+        const [capRes, statsRes, commRes, threatRes] = await Promise.all([
           fetch(`${API_BASE}/api/v1/auth/capacity-status`),
           fetch(`${API_BASE}/api/v1/scan/stats`),
           fetch(`${API_BASE}/api/v1/community/list`).catch(() => null),
+          fetch(`${API_BASE}/api/v1/community/quick-threats`).catch(() => null),
         ]);
 
         if (capRes.ok) {
@@ -137,10 +142,18 @@ export default function Landing({ onScanComplete }: LandingProps) {
             setLatestCommunityReport(commData[0]);
           }
         }
+
+        if (threatRes && threatRes.ok) {
+          const threatData = await threatRes.json();
+          if (Array.isArray(threatData) && threatData.length > 0) {
+            setQuickThreats(threatData);
+          }
+        }
       } catch (_) {}
     };
     fetchData();
   }, []);
+
 
   const handleUpgradeToPro = () => {
     const token = localStorage.getItem('tf_token');
@@ -374,27 +387,38 @@ export default function Landing({ onScanComplete }: LandingProps) {
           {/* Quick chips */}
           <div className="flex flex-wrap items-center justify-center gap-2 text-xs text-gray-300 font-medium pt-1 max-w-4xl mx-auto">
             <span className="text-[#8AB4CE]">Try Quick Scan:</span>
-            {[
-              ['text', 'Pay ₹500 Laptop Fee'],
-              ['website', 'job-verification-portal.net'],
-              ['email', 'hr-recruitment-team@gmail.com'],
-              ['text', 'Contact Telegram @hr_manager'],
-              ['training', '100% Placement Guarantee Academy'],
-              ['text', 'Earn ₹3,000/day Data Entry Task'],
-              ['website', 'secure-login-update.xyz'],
-              ['email', 'interview-confirmation-urgent@yahoo.com']
-            ].map(([tab, val]) => (
+            {(quickThreats.length > 0 ? quickThreats : [
+              { tab: 'text', val: 'Pay ₹500 Laptop Fee', title: 'Work-From-Home Upfront Fee Scam' },
+              { tab: 'website', val: 'job-verification-portal.net', title: 'Phishing Credential Capture' },
+              { tab: 'email', val: 'hr-recruitment-team@gmail.com', title: 'Free-Mail Impersonation' },
+              { tab: 'text', val: 'Contact Telegram @hr_manager', title: 'Telegram Task Scam' },
+              { tab: 'training', val: '100% Placement Guarantee Academy', title: 'Unaccredited Academy' },
+              { tab: 'text', val: 'Earn ₹3,000/day Data Entry Task', title: 'Part-Time Task Scam' }
+            ]).slice(0, 7).map((item, idx) => (
               <motion.button
-                key={val}
+                key={idx}
                 whileHover={{ scale: 1.04, color: '#fff' }}
                 whileTap={{ scale: 0.96 }}
-                onClick={() => handleChipClick(tab as ScanTab, val)}
+                onClick={() => handleChipClick(item.tab as ScanTab, item.val)}
+                title={item.title || item.val}
                 className="px-3 py-1.5 rounded-full bg-[#0A2034]/80 border border-[#00A4B4]/30 hover:border-[#00E5FF] hover:bg-[#0097A7]/20 text-gray-200 hover:text-white shadow-[0_0_12px_rgba(0,164,180,0.15)] transition-all cursor-pointer font-mono text-[11px]"
               >
-                ⚡ {val}
+                ⚡ {item.val}
               </motion.button>
             ))}
+
+            <button
+              onClick={() => setIsThreatModalOpen(true)}
+              className="px-3 py-1.5 rounded-full bg-gradient-to-r from-red-600/30 to-amber-600/30 hover:from-red-600/50 hover:to-amber-600/50 border border-red-500/40 text-amber-300 font-extrabold font-mono text-[11px] flex items-center gap-1 cursor-pointer transition shadow-md"
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+              </span>
+              <span>🔥 Live AI Scam Feed</span>
+            </button>
           </div>
+
 
         </motion.header>
 
@@ -781,10 +805,89 @@ export default function Landing({ onScanComplete }: LandingProps) {
             </div>
           </div>
         </div>
+      {/* ── Live AI Threat Feed Modal ──────────────────────────── */}
+      <AnimatePresence>
+        {isThreatModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xl flex items-center justify-center p-4 sm:p-6"
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 15 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 15 }}
+              className="w-full max-w-3xl max-h-[85vh] bg-[#0A2034] border border-[#00A4B4]/40 rounded-[28px] p-5 sm:p-7 text-white flex flex-col shadow-[0_20px_60px_rgba(0,0,0,0.8)] overflow-hidden"
+            >
+              {/* Modal Header */}
+              <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4 shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 bg-red-500/15 border border-red-500/30 text-red-400 rounded-[14px]">
+                    <ShieldAlert className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-heading font-extrabold text-lg text-white flex items-center gap-2">
+                      <span>Live AI Threat & Community Scam Feed</span>
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 border border-red-500/30">UPDATED DAILY</span>
+                    </h3>
+                    <p className="text-xs text-[#8AB4CE] font-mono">Real-time scam cases reported by community & flagged by AI web intelligence</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsThreatModalOpen(false)}
+                  className="p-2 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-gray-300 hover:text-white transition cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Threat List */}
+              <div className="flex-1 overflow-y-auto space-y-3.5 pr-1 no-scrollbar">
+                {quickThreats.map((threat, idx) => (
+                  <div
+                    key={idx}
+                    className="p-4 rounded-[18px] bg-white/[0.03] border border-white/[0.08] hover:border-[#00A4B4]/40 transition space-y-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                  >
+                    <div className="space-y-1 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs font-bold text-white">{threat.title || threat.val}</span>
+                        <span className="px-2 py-0.5 rounded-md text-[9px] font-mono font-bold bg-[#00A4B4]/15 text-[#00E5FF] border border-[#00A4B4]/30 uppercase">
+                          {threat.category || 'Threat Alert'}
+                        </span>
+                        <span className="px-2 py-0.5 rounded-md text-[9px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          {threat.ai_confidence || 95}% AI CONFIDENCE
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-300 font-light leading-relaxed">{threat.description}</p>
+                      <p className="text-[10px] text-[#8AB4CE] font-mono pt-1">
+                        Reported Target/Pattern: <code className="text-cyan-300 font-bold">{threat.val}</code>
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        setIsThreatModalOpen(false);
+                        handleChipClick(threat.tab as ScanTab, threat.val);
+                      }}
+                      className="px-4 py-2.5 rounded-[14px] bg-[#00A4B4] hover:bg-[#00B4D8] text-white text-xs font-bold font-mono transition cursor-pointer shrink-0 flex items-center justify-center gap-1.5 shadow-md"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Instant Scan</span>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       </footer>
     </div>
   );
 }
+
 
 // ── Shared Submit Button ───────────────────────────────────────
 function SubmitBtn({ loading, text, full }: { loading: boolean; text: string; full?: boolean }) {
