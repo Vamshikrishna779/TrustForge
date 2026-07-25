@@ -345,8 +345,14 @@ def get_all_users_admin():
             u_id = str(p.get("user_id", ""))
             auth_info = auth_users_map.get(u_id, {})
             
-            email_val = p.get("email") or auth_info.get("email") or (f"User ({u_id[:8]}...)" if u_id else "Registered User")
-            name_val = p.get("name") or auth_info.get("name") or (email_val.split('@')[0] if '@' in email_val else 'User')
+            email_val = p.get("email") or p.get("user_email") or auth_info.get("email") or ""
+            name_val = p.get("display_name") or p.get("name") or auth_info.get("name") or (email_val.split('@')[0] if '@' in email_val else "")
+            
+            if not email_val and u_id:
+                email_val = f"User ({u_id[:8]}...)"
+            if not name_val:
+                name_val = "Registered Member"
+
             created_val = p.get("created_at") or p.get("plan_activated_at") or auth_info.get("created_at")
 
             users_list.append({
@@ -357,6 +363,7 @@ def get_all_users_admin():
                 "plan": p.get("plan", "free"),
                 "created_at": created_val
             })
+
 
         # Include auth users not yet present in user_plans table
         existing_ids = {u["id"] for u in users_list}
