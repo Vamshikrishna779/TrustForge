@@ -57,7 +57,7 @@ export const TermsPage: React.FC = () => {
             <Shield className="w-5 h-5 text-[#00A4B4]" /> 1. Platform Intermediary Role & Automated Scoring
           </h2>
           <p>
-            TrustForge utilizes deterministic heuristic rule engines combined with Google Gemini AI models to analyze user-provided text, domain links, email addresses, documents, and academy names.
+            TrustForge utilizes deterministic heuristic rule engines combined with multimodal AI Security Engine models to analyze user-provided text, domain links, email addresses, documents, and academy names.
           </p>
           <ul className="list-disc list-inside text-xs text-[#8AB4CE] space-y-1.5 pl-2 font-mono">
             <li>Trust Scores (0–100) and Risk Verdicts (e.g. SAFE, CRITICAL_SCAM) are probabilistic automated metrics.</li>
@@ -75,10 +75,11 @@ export const TermsPage: React.FC = () => {
             The TrustForge Community Feed enables job seekers and candidates to share recruitment safety warnings. All community submissions are governed by strict moderation rules:
           </p>
           <ul className="list-disc list-inside text-xs text-[#8AB4CE] space-y-1.5 pl-2 font-mono">
-            <li><strong>AI Pre-Moderation:</strong> Submissions undergo automated Gemini AI moderation to filter out profanity, hate speech, spam, and non-recruitment content.</li>
+            <li><strong>AI Pre-Moderation:</strong> Submissions undergo automated AI Security moderation to filter out profanity, hate speech, spam, and non-recruitment content.</li>
             <li><strong>User Attribution:</strong> Submissions require user authentication and are tagged with the author’s registered handle.</li>
             <li><strong>Prohibited Content:</strong> Posting fabricated claims, extortion attempts, or unverified harassment is forbidden and will result in immediate ban and report deletion.</li>
           </ul>
+
         </section>
 
         {/* Section 3 */}

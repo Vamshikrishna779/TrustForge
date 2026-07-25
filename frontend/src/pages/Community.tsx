@@ -317,7 +317,8 @@ export default function Community() {
               </button>
 
               <h3 className="text-lg font-heading font-extrabold text-white">Report Active Scam</h3>
-              <p className="text-xs text-[#C8C8CC]">Submissions pass real-time Gemini AI moderation before publishing.</p>
+              <p className="text-xs text-[#C8C8CC]">Submissions pass real-time AI Trust Moderation before publishing.</p>
+
 
               {modalError && (
                 <p className="text-xs text-[#F87171] font-semibold bg-red-950/30 border border-red-900/30 px-3 py-2 rounded-[12px]">

@@ -257,7 +257,8 @@ export default function Landing({ onScanComplete }: LandingProps) {
         { text: 'AI Trust Score & Breakdown', ok: true },
         { text: 'Permanent Cloud History Backup', ok: true },
         { text: 'Placement Academy & Training Audit', ok: true },
-        { text: 'Priority Gemini AI Analysis', ok: true },
+        { text: 'Priority AI Security Analysis', ok: true },
+
       ],
       cta: isPro ? 'Current Active Plan ✓' : isProLocked ? 'Capacity Full' : 'Upgrade to Pro',
       ctaStyle: isPro
@@ -317,8 +318,9 @@ export default function Landing({ onScanComplete }: LandingProps) {
 
           <p className="text-xs sm:text-base text-[#8AB4CE] max-w-2xl mx-auto font-normal leading-relaxed px-2">
             Verify websites, documents, recruiter emails, WhatsApp messages & training programs
-            using deterministic rule checks and Google Gemini AI — completely free.
+            using deterministic rule checks and TrustForge AI Cyber Engine — completely free.
           </p>
+
 
           {/* Live Community Scam Ticker Bar (Strictly live from Supabase, zero mock fallbacks) */}
           {latestCommunityReport && latestCommunityReport.title && (
@@ -506,14 +508,15 @@ export default function Landing({ onScanComplete }: LandingProps) {
           <div className="text-center space-y-2">
             <p className="text-[11px] font-mono text-[#00A4B4] uppercase tracking-widest">How It Works</p>
             <h2 className="text-3xl font-heading font-extrabold text-white">3-Step Threat Detection</h2>
-            <p className="text-sm text-[#8AB4CE] max-w-lg mx-auto">Every scan runs through our deterministic rule engine before handing off to Gemini AI for an intelligent explanation.</p>
+            <p className="text-sm text-[#8AB4CE] max-w-lg mx-auto">Every scan runs through our deterministic rule engine before handing off to TrustForge AI Cyber Engine for an intelligent explanation.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
               { step: '01', icon: Search, title: 'Submit Input', desc: 'Upload a PDF, paste a URL, email address, text message, or training offer. We accept any format.' },
               { step: '02', icon: Cpu, title: 'Rule Engine Fires', desc: 'Our deterministic heuristic system scans for payment demands, domain age, phishing patterns, and brand impersonation.' },
-              { step: '03', icon: Sparkles, title: 'AI Compiles Report', desc: 'Gemini multimodal AI reads the raw evidence and writes a plain-English explanation with a Trust Score and action steps.' },
+              { step: '03', icon: Sparkles, title: 'AI Compiles Report', desc: 'TrustForge Multimodal Cyber AI reads the raw evidence and writes a plain-English explanation with a Trust Score and action steps.' },
             ].map(({ step, icon: Icon, title, desc }) => (
+
               <motion.div
                 key={step}
                 whileHover={{ y: -4 }}
@@ -746,8 +749,9 @@ export default function Landing({ onScanComplete }: LandingProps) {
                 </li>
               </ul>
               <p className="text-[11px] text-[#555] leading-relaxed pt-1">
-                Deterministic security rules engine combined with Gemini AI to protect candidates from recruitment fraud.
+                Deterministic security rules engine combined with Multimodal Cyber AI to protect candidates from recruitment fraud.
               </p>
+
             </div>
           </div>
 
