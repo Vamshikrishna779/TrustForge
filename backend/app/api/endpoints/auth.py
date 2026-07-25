@@ -143,16 +143,30 @@ def get_profile(authorization: str = Header(default="")):
         if not user:
             raise HTTPException(status_code=401, detail="Invalid or expired session.")
 
-        plan_result = sb.table("user_plans").select("plan,plan_activated_at,plan_expires_at").eq("user_id", str(user.id)).single().execute()
-        plan_data = plan_result.data or {}
+        plan = "free"
+        plan_activated = None
+        plan_expires = None
+
+        try:
+            plan_result = sb.table("user_plans").select("plan,plan_activated_at,plan_expires_at").eq("user_id", str(user.id)).execute()
+            if plan_result and plan_result.data and len(plan_result.data) > 0:
+                p_data = plan_result.data[0]
+                plan = p_data.get("plan", "free")
+                plan_activated = p_data.get("plan_activated_at")
+                plan_expires = p_data.get("plan_expires_at")
+        except Exception:
+            pass
+
+        # Extract display name from metadata or full_name or email
+        display_name = user.user_metadata.get("display_name") or user.user_metadata.get("full_name") or user.user_metadata.get("name") or user.email.split("@")[0]
 
         return {
             "id": str(user.id),
             "email": user.email,
-            "display_name": user.user_metadata.get("display_name", user.email.split("@")[0]),
-            "plan": plan_data.get("plan", "free"),
-            "plan_activated_at": plan_data.get("plan_activated_at"),
-            "plan_expires_at": plan_data.get("plan_expires_at"),
+            "display_name": display_name,
+            "plan": plan,
+            "plan_activated_at": plan_activated,
+            "plan_expires_at": plan_expires,
         }
     except RuntimeError as e:
         raise HTTPException(status_code=503, detail=str(e))
@@ -160,6 +174,7 @@ def get_profile(authorization: str = Header(default="")):
         raise
     except Exception as e:
         raise HTTPException(status_code=401, detail=f"Profile fetch failed: {str(e)}")
+
 
 # Capacity constraints for free tier Supabase database
 MAX_PRO_USERS = 50

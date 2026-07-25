@@ -35,22 +35,39 @@ export default function Auth({ onLogin }: AuthProps) {
         fetch(`${API}/profile`, {
           headers: { Authorization: `Bearer ${accessToken}` }
         })
-          .then(res => res.json())
+          .then(res => res.ok ? res.json() : null)
           .then(user => {
-            if (user && user.id) {
+            let finalUser = user;
+            if (!finalUser || !finalUser.id) {
+              try {
+                const payloadBase64 = accessToken.split('.')[1];
+                const decoded = JSON.parse(atob(payloadBase64));
+                finalUser = {
+                  id: decoded.sub,
+                  email: decoded.email,
+                  display_name: decoded.user_metadata?.full_name || decoded.user_metadata?.name || decoded.email?.split('@')[0],
+                  plan: 'free'
+                };
+              } catch (_) {}
+            }
+
+            if (finalUser && finalUser.id) {
               localStorage.setItem('tf_token', accessToken);
-              localStorage.setItem('tf_user', JSON.stringify(user));
-              if (onLogin) onLogin(user);
+              localStorage.setItem('tf_user', JSON.stringify(finalUser));
+              if (onLogin) onLogin(finalUser);
               navigate('/');
+            } else {
+              throw new Error('Could not process session.');
             }
           })
-          .catch(() => {
-            setError('Google authentication processing failed.');
+          .catch(err => {
+            setError(sanitizeErrorMessage(err, 'Google Sign-In failed. Please try again.'));
           })
           .finally(() => setLoading(false));
       }
     }
   }, []);
+
 
   const handleGoogleLogin = async () => {
     try {
