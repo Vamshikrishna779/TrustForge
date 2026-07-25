@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   ShieldAlert, Users, CreditCard, RefreshCw, CheckCircle2, 
-  Trash2, ShieldCheck, Search, Award, ExternalLink
+  Trash2, ShieldCheck, Search, Award, ExternalLink, Mail, Send, X
 } from 'lucide-react';
 import { API_BASE } from '../api';
 import { ConfirmModal } from '../components/ConfirmModal';
 
 interface SystemUser {
   id: string;
+  name?: string;
   email: string;
   plan: 'free' | 'pro' | 'enterprise';
   created_at?: string;
@@ -49,8 +50,24 @@ export const AdminPage: React.FC = () => {
     onConfirm: () => {},
   });
 
+  // Admin Direct Email Modal State
+  const [emailModal, setEmailModal] = useState<{
+    isOpen: boolean;
+    userEmail: string;
+    userName: string;
+    subject: string;
+    body: string;
+  }>({
+    isOpen: false,
+    userEmail: '',
+    userName: '',
+    subject: '[TrustForge Security Notice] Account Update',
+    body: '',
+  });
+
   // Live managed user list from Supabase backend
   const [users, setUsers] = useState<SystemUser[]>([]);
+
 
 
   const fetchReports = async () => {
@@ -174,7 +191,31 @@ export const AdminPage: React.FC = () => {
     }
   };
 
-  const filteredUsers = users.filter(u => u.email.toLowerCase().includes(searchTerm.toLowerCase()));
+  const openEmailModal = (user: SystemUser) => {
+    const userDisplayName = user.name || (user.email.includes('@') ? user.email.split('@')[0] : 'Candidate');
+    setEmailModal({
+      isOpen: true,
+      userEmail: user.email,
+      userName: userDisplayName,
+      subject: '[TrustForge Security Notice] Security & Account Status Update',
+      body: `Hello ${userDisplayName},\n\nThis is an official security communication from the TrustForge Administration Team regarding your account (${user.email}).\n\nIf you have any questions or require support, reply to this message directly.\n\nBest regards,\nTrustForge Cyber Intelligence Team`,
+    });
+  };
+
+  const handleSendEmail = () => {
+    if (!emailModal.userEmail) return;
+    const mailtoUrl = `mailto:${encodeURIComponent(emailModal.userEmail)}?subject=${encodeURIComponent(emailModal.subject)}&body=${encodeURIComponent(emailModal.body)}`;
+    window.open(mailtoUrl, '_blank');
+    setEmailModal(prev => ({ ...prev, isOpen: false }));
+    setActionMsg(`Email dispatch opened for ${emailModal.userEmail}!`);
+    setTimeout(() => setActionMsg(''), 4000);
+  };
+
+  const filteredUsers = users.filter(u => 
+    u.email.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    (u.name && u.name.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+
   const filteredReports = reports.filter(r => r.title.toLowerCase().includes(searchTerm.toLowerCase()) || r.category.toLowerCase().includes(searchTerm.toLowerCase()));
 
   const totalUsers = users.length;
@@ -281,19 +322,22 @@ export const AdminPage: React.FC = () => {
         {/* Tab 1: Users Table */}
         {activeTab === 'users' && (
           <div className="rounded-2xl glass-card border border-white/[0.08] overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-[550px]">
+            <table className="w-full text-left border-collapse min-w-[650px]">
               <thead>
                 <tr className="border-b border-white/[0.08] bg-white/[0.02] text-xs font-mono font-bold text-gray-400 uppercase">
-                  <th className="p-4">User Email</th>
+                  <th className="p-4">User Name & Email</th>
                   <th className="p-4">Current Plan</th>
                   <th className="p-4">Joined Date</th>
-                  <th className="p-4 text-right">Quick Action</th>
+                  <th className="p-4 text-right">Quick Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/[0.06] text-xs">
                 {filteredUsers.map(u => (
                   <tr key={u.id} className="hover:bg-white/[0.02] transition">
-                    <td className="p-4 font-semibold text-white">{u.email}</td>
+                    <td className="p-4 font-semibold text-white">
+                      <div className="text-white font-bold">{u.name || 'Registered Member'}</div>
+                      <div className="text-[11px] text-[#00A4B4] font-mono">{u.email}</div>
+                    </td>
                     <td className="p-4">
                       <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold font-mono uppercase ${
                         u.plan === 'pro'
@@ -303,9 +347,18 @@ export const AdminPage: React.FC = () => {
                         {u.plan.toUpperCase()}
                       </span>
                     </td>
-                    <td className="p-4 text-gray-400 font-mono">{u.created_at || 'Recent'}</td>
+                    <td className="p-4 text-gray-400 font-mono">{u.created_at ? new Date(u.created_at).toLocaleDateString() : 'Recent'}</td>
                     <td className="p-4 text-right">
                       <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => openEmailModal(u)}
+                          className="px-2.5 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 text-xs font-bold font-mono transition flex items-center gap-1 cursor-pointer"
+                          title="Send direct email notification"
+                        >
+                          <Mail className="w-3.5 h-3.5" />
+                          <span>Send Mail</span>
+                        </button>
+
                         <button
                           onClick={() => handleTogglePlan(u.id)}
                           className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
@@ -397,7 +450,71 @@ export const AdminPage: React.FC = () => {
         onConfirm={deleteModal.onConfirm}
         onClose={() => setDeleteModal(prev => ({ ...prev, isOpen: false }))}
       />
+
+      {/* Admin Send Direct Email Modal */}
+      {emailModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
+          <div className="relative w-full max-w-lg p-6 rounded-[24px] bg-[#0A2034] border border-[#00A4B4]/40 shadow-[0_0_50px_rgba(0,164,180,0.3)] text-white space-y-4">
+            <button
+              onClick={() => setEmailModal(prev => ({ ...prev, isOpen: false }))}
+              className="absolute top-4 right-4 p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-2xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-400">
+                <Mail className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold font-heading text-white">Send Email Notification</h3>
+                <p className="text-xs text-cyan-400 font-mono">To: {emailModal.userName} ({emailModal.userEmail})</p>
+              </div>
+            </div>
+
+            <div className="space-y-3 pt-2 text-xs">
+              <div>
+                <label className="block text-[11px] font-mono text-gray-400 mb-1 font-bold">Email Subject</label>
+                <input
+                  type="text"
+                  value={emailModal.subject}
+                  onChange={e => setEmailModal(prev => ({ ...prev, subject: e.target.value }))}
+                  className="w-full p-2.5 rounded-xl bg-white/[0.05] border border-white/[0.1] text-white focus:border-cyan-400 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-mono text-gray-400 mb-1 font-bold">Message Content</label>
+                <textarea
+                  rows={5}
+                  value={emailModal.body}
+                  onChange={e => setEmailModal(prev => ({ ...prev, body: e.target.value }))}
+                  className="w-full p-3 rounded-xl bg-white/[0.05] border border-white/[0.1] text-white focus:border-cyan-400 focus:outline-none leading-relaxed font-mono"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                onClick={() => setEmailModal(prev => ({ ...prev, isOpen: false }))}
+                className="px-4 py-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-xs font-semibold text-gray-300 transition cursor-pointer"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={handleSendEmail}
+                className="px-5 py-2 rounded-xl bg-gradient-to-r from-[#0097A7] to-[#00B4D8] text-white text-xs font-bold font-mono transition flex items-center gap-2 shadow-lg shadow-[#00A4B4]/30 cursor-pointer"
+              >
+                <Send className="w-3.5 h-3.5" />
+                <span>Open & Send Email</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
+
 

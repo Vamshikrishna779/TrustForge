@@ -271,27 +271,69 @@ def get_cloud_history(authorization: str = Header(default="")):
 # ─── ADMIN ENDPOINTS ──────────────────────────────────────────
 @router.get("/admin/users")
 def get_all_users_admin():
-    """Returns all registered users and their plans from Supabase."""
+    """Returns all registered users, their emails, names, and plans from Supabase."""
     try:
         sb = get_supabase()
         res = sb.table("user_plans").select("*").execute()
         plans_data = res.data or []
         
-        # Try fetching real emails from Supabase auth admin or list
+        # Query auth.users via Supabase Admin Auth API
+        auth_users_map = {}
+        try:
+            users_res = sb.auth.admin.list_users()
+            if users_res:
+                raw_list = users_res if isinstance(users_res, list) else getattr(users_res, 'users', [])
+                for u in raw_list:
+                    u_id = str(getattr(u, 'id', ''))
+                    email = getattr(u, 'email', '')
+                    user_meta = getattr(u, 'user_metadata', {}) or {}
+                    name = user_meta.get('full_name') or user_meta.get('display_name') or user_meta.get('name') or (email.split('@')[0] if email else 'User')
+                    created_at = getattr(u, 'created_at', None)
+                    auth_users_map[u_id] = {
+                        "email": email,
+                        "name": name,
+                        "created_at": created_at
+                    }
+        except Exception as err:
+            print("Admin list_users info:", err)
+
         users_list = []
         for p in plans_data:
-            u_id = p.get("user_id", "")
-            email_val = p.get("email") or f"User ({u_id[:8]}...)"
+            u_id = str(p.get("user_id", ""))
+            auth_info = auth_users_map.get(u_id, {})
+            
+            email_val = p.get("email") or auth_info.get("email") or (f"User ({u_id[:8]}...)" if u_id else "Registered User")
+            name_val = p.get("name") or auth_info.get("name") or (email_val.split('@')[0] if '@' in email_val else 'User')
+            created_val = p.get("created_at") or p.get("plan_activated_at") or auth_info.get("created_at")
+
             users_list.append({
                 "id": u_id,
                 "user_id": u_id,
+                "name": name_val,
                 "email": email_val,
                 "plan": p.get("plan", "free"),
-                "created_at": p.get("created_at") or p.get("plan_activated_at")
+                "created_at": created_val
             })
+
+        # Include auth users not yet present in user_plans table
+        existing_ids = {u["id"] for u in users_list}
+        for u_id, auth_info in auth_users_map.items():
+            if u_id not in existing_ids:
+                e_val = auth_info.get("email") or f"User ({u_id[:8]}...)"
+                users_list.append({
+                    "id": u_id,
+                    "user_id": u_id,
+                    "name": auth_info.get("name") or (e_val.split('@')[0] if '@' in e_val else "User"),
+                    "email": e_val,
+                    "plan": "free",
+                    "created_at": auth_info.get("created_at")
+                })
+
         return users_list
-    except Exception:
+    except Exception as e:
+        print("Failed to fetch admin users:", e)
         return []
+
 
 class AdminUserPlanRequest(BaseModel):
     user_id: str
