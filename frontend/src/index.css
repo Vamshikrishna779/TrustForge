@@ -73,9 +73,15 @@
 }
 
 /* Firefox scrollbar styling */
-* {
+html, body, div, section, aside, main, article, nav {
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 164, 180, 0.35) rgba(4, 16, 27, 0.7);
+}
+
+/* Override: hide scrollbar completely when no-scrollbar is used */
+.no-scrollbar {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
 
 
