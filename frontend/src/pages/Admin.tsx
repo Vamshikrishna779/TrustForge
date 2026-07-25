@@ -446,7 +446,8 @@ export const AdminPage: React.FC = () => {
 
       {/* Controls & Search Header */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto no-scrollbar pb-0.5">
+
           <button
             onClick={() => setActiveTab('users')}
             className={`px-3.5 py-2 rounded-xl text-xs font-bold font-mono transition flex items-center gap-2 whitespace-nowrap cursor-pointer ${
