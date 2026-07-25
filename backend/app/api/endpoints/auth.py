@@ -39,9 +39,11 @@ def register(payload: RegisterRequest):
             "email": payload.email,
             "password": payload.password,
             "options": {
-                "data": {"display_name": payload.display_name or payload.email.split("@")[0]}
+                "data": {"display_name": payload.display_name or payload.email.split("@")[0]},
+                "email_redirect_to": "https://trustforge-app.pages.dev/auth"
             }
         })
+
         user = result.user
         if not user:
             raise HTTPException(status_code=400, detail="Registration failed. Check your email and try again.")
