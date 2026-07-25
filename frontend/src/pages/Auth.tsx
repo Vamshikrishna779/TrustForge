@@ -262,17 +262,23 @@ export default function Auth({ onLogin }: AuthProps) {
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
               <div className="space-y-1">
-                <label className="text-[9px] font-bold text-[#666] uppercase tracking-widest font-mono">Username</label>
+                <div className="flex items-center justify-between">
+                  <label className="text-[9px] font-bold text-[#666] uppercase tracking-widest font-mono">Username</label>
+                  <span className="text-[9px] text-[#00A4B4] font-mono font-bold">5–15 characters</span>
+                </div>
                 <input
                   type="text"
                   required
+                  minLength={5}
+                  maxLength={15}
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  placeholder="Choose a username"
+                  placeholder="Choose unique username (5-15 chars)"
                   className="w-full px-4 py-2.5 glass-input rounded-[16px] text-xs text-white placeholder-[#444] focus:outline-none"
                 />
               </div>
             )}
+
 
             <div className="space-y-1">
               <label className="text-[9px] font-bold text-[#666] uppercase tracking-widest font-mono">Email Address</label>

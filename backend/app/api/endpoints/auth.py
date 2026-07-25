@@ -10,7 +10,7 @@ router = APIRouter()
 class RegisterRequest(BaseModel):
     email: EmailStr
     password: str
-    display_name: Optional[str] = None
+    display_name: str
 
 class LoginRequest(BaseModel):
     email: EmailStr
@@ -35,11 +35,26 @@ def get_google_auth_url(redirect_to: str = "https://trustforge-app.pages.dev/aut
 def register(payload: RegisterRequest):
     try:
         sb = get_supabase()
+        display_name = (payload.display_name or "").strip()
+
+        if len(display_name) < 5 or len(display_name) > 15:
+            raise HTTPException(status_code=400, detail="Username must be between 5 and 15 characters long.")
+
+        # Check username uniqueness in user_plans
+        try:
+            existing = sb.table("user_plans").select("id").ilike("display_name", display_name).execute()
+            if existing and existing.data and len(existing.data) > 0:
+                raise HTTPException(status_code=400, detail="Username is already taken. Please choose a different username.")
+        except HTTPException:
+            raise
+        except Exception:
+            pass
+
         result = sb.auth.sign_up({
             "email": payload.email,
             "password": payload.password,
             "options": {
-                "data": {"display_name": payload.display_name or payload.email.split("@")[0]},
+                "data": {"display_name": display_name},
                 "email_redirect_to": "https://trustforge-app.pages.dev/auth"
             }
         })
@@ -48,21 +63,25 @@ def register(payload: RegisterRequest):
         if not user:
             raise HTTPException(status_code=400, detail="Registration failed. Check your email and try again.")
 
-        # Create default free plan entry for the new user
+        # Create default free plan entry for the new user with display_name and email
         try:
-            sb.table("user_plans").insert({
+            sb.table("user_plans").upsert({
                 "user_id": str(user.id),
+                "email": user.email,
+                "display_name": display_name,
                 "plan": "free",
-            }).execute()
+            }, on_conflict="user_id").execute()
         except Exception:
-            pass  # Already exists or RLS prevents — non-fatal
+            pass
 
         return {
             "id": str(user.id),
             "email": user.email,
+            "display_name": display_name,
             "plan": "free",
             "message": "Account created. Check your email to confirm registration."
         }
+
     except RuntimeError as e:
         raise HTTPException(status_code=503, detail=str(e))
     except HTTPException:
