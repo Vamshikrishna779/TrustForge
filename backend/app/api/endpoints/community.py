@@ -270,6 +270,7 @@ def get_quick_scan_threats():
                 "val": title[:40],
                 "title": title,
                 "description": desc,
+                "full_text": f"ALERT REPORT: {title}\n\nDETAILS: {desc}",
                 "category": item.get("category", "Community Scam Report"),
                 "ai_confidence": item.get("ai_confidence", 95),
                 "created_at": item.get("created_at"),
@@ -278,22 +279,23 @@ def get_quick_scan_threats():
     except Exception as e:
         print("Community DB fetch notice:", e)
 
-    # 2. Fetch live real-time web news threat alerts via Gemini AI
+    # 2. Fetch live real-time web news threat alerts via Gemini AI with FULL realistic text context
     ai_news_items = []
     try:
         if settings.GEMINI_API_KEY:
             ai_news_prompt = """
-            Act as a live cybersecurity news monitor. Generate 6 active, real-world recruitment & digital scam trends currently reported in recent news and cyber crime advisories (e.g. WhatsApp task scams, Telegram rating traps, laptop security deposit demands, fake recruiter emails, malicious APK downloads).
+            Act as a live cybersecurity threat intelligence engine. Generate 6 active, real-world recruitment & digital scam trends currently reported in recent news and cyber crime advisories (e.g. WhatsApp task scams, Telegram rating traps, laptop security deposit demands, fake recruiter emails, malicious APK downloads).
             Do NOT mention specific real corporate brand names (no TCS, Wipro, Google, etc.).
-            Return a raw JSON array of 6 items with this exact schema:
+            Return a raw JSON array of 6 items matching this exact schema:
             [
               {
                 "tab": "text",
-                "val": "<Short 4-6 word chip title>",
+                "val": "<Short 4-6 word chip title, e.g. 'Pay ₹500 Laptop Deposit Fee'>",
                 "title": "<Clear news alert headline>",
-                "category": "whatsapp_task",
+                "category": "upfront_fee",
                 "ai_confidence": 98,
-                "description": "<Brief 1-sentence news alert summary describing the real technique used>"
+                "description": "<Brief 1-sentence news alert summary explaining the scam technique>",
+                "full_text": "<Full 3-4 sentence realistic scam transcript message that a candidate would receive via SMS/WhatsApp/Email, including fee demand, UPI handle or Telegram contact, and urgency>"
               }
             ]
             Return RAW JSON ONLY, no markdown surrounding.
@@ -317,6 +319,8 @@ def get_quick_scan_threats():
         v = str(t.get("val", "")).strip()
         if v and v not in seen:
             seen.add(v)
+            if not t.get("full_text"):
+                t["full_text"] = f"{t.get('title', '')}: {t.get('description', '')}"
             final_threats.append(t)
 
     return final_threats[:12]

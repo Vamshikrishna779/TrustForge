@@ -217,10 +217,29 @@ export default function Landing({ onScanComplete }: LandingProps) {
     }
   };
 
-  const handleChipClick = (tab: ScanTab, val: string) => {
-    setActiveTab(tab); setSearchVal(val);
+  const handleChipClick = (tab: ScanTab, item: any) => {
+    setActiveTab(tab);
+    setErrorMsg('');
+
+    if (typeof item === 'string') {
+      setSearchVal(item);
+    } else if (item && typeof item === 'object') {
+      const fullContent = item.full_text || item.description || item.val || item.title || '';
+
+      if (tab === 'text') {
+        setSearchVal(fullContent);
+      } else if (tab === 'training') {
+        setSearchVal(item.val || item.title || 'Placement Academy');
+        setAcademyUrl(item.url || '');
+        setAcademyDetails(item.description || fullContent);
+      } else {
+        setSearchVal(item.val || item.title || '');
+      }
+    }
+
     scannerRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
 
   const containerVariants = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1 } } };
   const itemVariants = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { type: 'tween', ease: 'easeOut', duration: 0.4 } as const } };
@@ -399,7 +418,8 @@ export default function Landing({ onScanComplete }: LandingProps) {
                 key={idx}
                 whileHover={{ scale: 1.04, color: '#fff' }}
                 whileTap={{ scale: 0.96 }}
-                onClick={() => handleChipClick(item.tab as ScanTab, item.val)}
+                onClick={() => handleChipClick(item.tab as ScanTab, item)}
+
                 title={item.title || item.val}
                 className="px-3 py-1.5 rounded-full bg-[#0A2034]/80 border border-[#00A4B4]/30 hover:border-[#00E5FF] hover:bg-[#0097A7]/20 text-gray-200 hover:text-white shadow-[0_0_12px_rgba(0,164,180,0.15)] transition-all cursor-pointer font-mono text-[11px]"
               >
@@ -868,8 +888,9 @@ export default function Landing({ onScanComplete }: LandingProps) {
                     <button
                       onClick={() => {
                         setIsThreatModalOpen(false);
-                        handleChipClick(threat.tab as ScanTab, threat.val);
+                        handleChipClick(threat.tab as ScanTab, threat);
                       }}
+
                       className="px-4 py-2.5 rounded-[14px] bg-[#00A4B4] hover:bg-[#00B4D8] text-white text-xs font-bold font-mono transition cursor-pointer shrink-0 flex items-center justify-center gap-1.5 shadow-md"
                     >
                       <Sparkles className="w-3.5 h-3.5" />
