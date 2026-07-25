@@ -71,6 +71,26 @@ def register(payload: RegisterRequest):
                 "display_name": display_name,
                 "plan": "free",
             }, on_conflict="user_id").execute()
+
+            # Auto-send Welcome Notification to new user
+            sb.table("user_notifications").insert({
+                "user_id": str(user.id),
+                "user_email": user.email,
+                "title": "🎉 Welcome to TrustForge!",
+                "message": f"Hello {display_name}! Your account is active. Start scanning suspicious job offers, emails, and URLs with our AI Cyber Intelligence Engine.",
+                "category": "system",
+                "is_read": False
+            }).execute()
+
+            # Auto-send Registration Notification to Admin
+            sb.table("user_notifications").insert({
+                "user_id": "admin_alert",
+                "user_email": "vamshikrishna9608@gmail.com",
+                "title": "👤 New User Registration",
+                "message": f"New user {display_name} ({user.email}) has registered on TrustForge.",
+                "category": "admin_alert",
+                "is_read": False
+            }).execute()
         except Exception:
             pass
 
@@ -130,7 +150,7 @@ def login(payload: LoginRequest):
             "user": {
                 "id": str(user.id),
                 "email": user.email,
-                "display_name": user.user_metadata.get("display_name", user.email.split("@")[0]),
+                "display_name": disp_name,
                 "plan": plan,
                 "plan_expires_at": plan_expires,
             }
@@ -175,9 +195,15 @@ def get_profile(authorization: str = Header(default="")):
         # Extract display name from metadata or full_name or email
         display_name = user.user_metadata.get("display_name") or user.user_metadata.get("full_name") or user.user_metadata.get("name") or user.email.split("@")[0]
 
+        plan = "free"
+        plan_activated = None
+        plan_expires = None
+
         try:
             plan_result = sb.table("user_plans").select("plan,plan_activated_at,plan_expires_at").eq("user_id", str(user.id)).execute()
-            if plan_result and plan_result.data and len(plan_result.data) > 0:
+            is_new_user = not (plan_result and plan_result.data and len(plan_result.data) > 0)
+
+            if not is_new_user:
                 p_data = plan_result.data[0]
                 plan = p_data.get("plan", "free")
                 plan_activated = p_data.get("plan_activated_at")
@@ -190,6 +216,27 @@ def get_profile(authorization: str = Header(default="")):
                 "display_name": display_name,
                 "plan": plan
             }, on_conflict="user_id").execute()
+
+            if is_new_user:
+                # Auto-send Welcome Notification to new user
+                sb.table("user_notifications").insert({
+                    "user_id": str(user.id),
+                    "user_email": user.email,
+                    "title": "🎉 Welcome to TrustForge!",
+                    "message": f"Hello {display_name}! Your account is active. Start scanning suspicious job offers, emails, and URLs with our AI Cyber Intelligence Engine.",
+                    "category": "system",
+                    "is_read": False
+                }).execute()
+
+                # Auto-send Registration Notification to Admin
+                sb.table("user_notifications").insert({
+                    "user_id": "admin_alert",
+                    "user_email": "vamshikrishna9608@gmail.com",
+                    "title": "👤 New User Registration",
+                    "message": f"New user {display_name} ({user.email}) has registered on TrustForge.",
+                    "category": "admin_alert",
+                    "is_read": False
+                }).execute()
         except Exception:
             pass
 

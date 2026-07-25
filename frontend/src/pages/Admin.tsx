@@ -370,7 +370,7 @@ export const AdminPage: React.FC = () => {
       )}
 
       {/* Quick Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-5 rounded-2xl glass-card border border-white/[0.08] flex items-center justify-between">
           <div>
             <p className="text-[11px] font-mono text-gray-400 uppercase tracking-widest">Total Platform Users</p>
@@ -400,7 +400,18 @@ export const AdminPage: React.FC = () => {
             <ShieldAlert className="w-6 h-6" />
           </div>
         </div>
+
+        <div className="p-5 rounded-2xl glass-card border border-white/[0.08] flex items-center justify-between">
+          <div>
+            <p className="text-[11px] font-mono font-bold text-cyan-400 uppercase tracking-widest">Dispatched Alerts</p>
+            <p className="text-3xl font-extrabold font-heading text-white mt-1">{auditLogs.length}</p>
+          </div>
+          <div className="p-3 bg-cyan-500/10 text-cyan-400 rounded-xl">
+            <Send className="w-6 h-6" />
+          </div>
+        </div>
       </div>
+
 
       {/* Controls & Search Header */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
