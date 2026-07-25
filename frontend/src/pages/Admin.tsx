@@ -608,7 +608,8 @@ export const AdminPage: React.FC = () => {
       {/* Glassmorphism Confirmation Delete Modal */}
       {deleteModal.isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
-          <div className="relative w-full max-w-md p-6 rounded-[24px] bg-[#0A2034] border border-red-500/40 shadow-[0_0_50px_rgba(239,68,68,0.3)] text-white space-y-4">
+          <div className="relative w-full max-w-md p-6 rounded-[24px] bg-[#0A2034] border border-red-500/40 shadow-[0_0_50px_rgba(239,68,68,0.3)] text-white space-y-4 max-h-[90vh] overflow-y-auto">
+
             <button
               onClick={() => setDeleteModal(prev => ({ ...prev, isOpen: false }))}
               className="absolute top-4 right-4 p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
@@ -652,7 +653,8 @@ export const AdminPage: React.FC = () => {
       {/* Admin Send Direct Notification & Email Modal */}
       {emailModal.isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
-          <div className="relative w-full max-w-xl p-6 sm:p-8 rounded-[24px] bg-[#0A2034] border border-[#00A4B4]/40 shadow-[0_0_50px_rgba(0,164,180,0.3)] text-white space-y-5">
+          <div className="relative w-full max-w-xl p-5 sm:p-8 rounded-[24px] bg-[#0A2034] border border-[#00A4B4]/40 shadow-[0_0_50px_rgba(0,164,180,0.3)] text-white space-y-4 max-h-[90vh] overflow-y-auto">
+
             <button
               onClick={() => setEmailModal(prev => ({ ...prev, isOpen: false }))}
               className="absolute top-4 right-4 p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition cursor-pointer"

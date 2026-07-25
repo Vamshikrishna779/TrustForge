@@ -173,7 +173,9 @@ function Navbar({ isLoggedIn, user }: { isLoggedIn: boolean; user: any; onLogout
 
           {/* Mobile Right Actions */}
           <div className="flex items-center gap-2 sm:hidden">
-            {!isLoggedIn && (
+            {isLoggedIn ? (
+              <NotificationCenter />
+            ) : (
               <Link
                 to="/auth"
                 onClick={() => setIsOpen(false)}
@@ -185,12 +187,13 @@ function Navbar({ isLoggedIn, user }: { isLoggedIn: boolean; user: any; onLogout
             )}
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="p-2 text-[#C8C8CC] hover:text-white focus:outline-none"
+              className="p-2 text-[#C8C8CC] hover:text-white focus:outline-none cursor-pointer"
               aria-label="Toggle Navigation"
             >
               {isOpen ? <CloseIcon className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
+
 
 
           {/* Desktop navigation */}
