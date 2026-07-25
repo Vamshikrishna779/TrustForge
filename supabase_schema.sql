@@ -43,10 +43,13 @@ CREATE TABLE IF NOT EXISTS user_plans (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Ensure Razorpay columns exist if table was previously created
+-- Ensure additional columns exist if table was previously created
 ALTER TABLE user_plans
+  ADD COLUMN IF NOT EXISTS email TEXT,
+  ADD COLUMN IF NOT EXISTS display_name TEXT,
   ADD COLUMN IF NOT EXISTS razorpay_payment_id TEXT,
   ADD COLUMN IF NOT EXISTS razorpay_order_id TEXT;
+
 
 -- Enable RLS for user_plans
 ALTER TABLE user_plans ENABLE ROW LEVEL SECURITY;
