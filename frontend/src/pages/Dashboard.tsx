@@ -3,6 +3,7 @@ import { API_BASE } from '../api';
 import { useNavigate } from 'react-router-dom';
 import { ShieldCheck, ShieldAlert, FileText, Calendar, ArrowRight, RefreshCw, AlertOctagon, Trash2, Filter } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { ConfirmModal } from '../components/ConfirmModal';
 
 interface ScanRecord {
   id: string;
@@ -31,6 +32,13 @@ export default function Dashboard({ onSelectReport }: DashboardProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    scanId: string;
+  }>({
+    isOpen: false,
+    scanId: '',
+  });
 
   const fetchHistory = async () => {
     setLoading(true);
@@ -53,13 +61,18 @@ export default function Dashboard({ onSelectReport }: DashboardProps) {
     }
   };
 
-
   useEffect(() => {
     fetchHistory();
   }, []);
 
-  const handleDeleteScan = async (e: React.MouseEvent, scanId: string) => {
-    e.stopPropagation(); // Don't trigger navigation to report details
+  const triggerDeleteScan = (e: React.MouseEvent, scanId: string) => {
+    e.stopPropagation();
+    setDeleteModal({ isOpen: true, scanId });
+  };
+
+  const executeDeleteScan = async () => {
+    const scanId = deleteModal.scanId;
+    setDeleteModal({ isOpen: false, scanId: '' });
     try {
       const res = await fetch(`${API_BASE}/api/v1/scan/report/${scanId}`, {
         method: 'DELETE'
@@ -70,9 +83,11 @@ export default function Dashboard({ onSelectReport }: DashboardProps) {
       }
       setHistory(prev => prev.filter(s => s.id !== scanId));
     } catch (err: any) {
-      alert(`Failed to delete scan record: ${err.message || 'Server error'}`);
+      setError(`Failed to delete scan: ${err.message || 'Server error'}`);
+      setTimeout(() => setError(''), 4000);
     }
   };
+
 
 
   const filteredHistory = history.filter(scan => {
@@ -213,8 +228,8 @@ export default function Dashboard({ onSelectReport }: DashboardProps) {
                     </div>
                     
                     <button
-                      onClick={(e) => handleDeleteScan(e, scan.id)}
-                      className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 transition"
+                      onClick={(e) => triggerDeleteScan(e, scan.id)}
+                      className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 transition cursor-pointer"
                       title="Delete scan history record"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -235,6 +250,14 @@ export default function Dashboard({ onSelectReport }: DashboardProps) {
           </div>
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={deleteModal.isOpen}
+        title="Delete Scan Record"
+        message="Are you sure you want to delete this scan history record? For Pro users, this will also remove the record from your permanent Supabase cloud history."
+        onConfirm={executeDeleteScan}
+        onClose={() => setDeleteModal({ isOpen: false, scanId: '' })}
+      />
     </motion.div>
   );
 }

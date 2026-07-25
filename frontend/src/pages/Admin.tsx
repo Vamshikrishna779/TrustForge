@@ -5,6 +5,7 @@ import {
   Trash2, ShieldCheck, Search, Award, ExternalLink
 } from 'lucide-react';
 import { API_BASE } from '../api';
+import { ConfirmModal } from '../components/ConfirmModal';
 
 interface SystemUser {
   id: string;
@@ -35,8 +36,22 @@ export const AdminPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [actionMsg, setActionMsg] = useState('');
 
+  // Custom Glassmorphism Confirmation Modal State
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
+
   // Live managed user list from Supabase backend
   const [users, setUsers] = useState<SystemUser[]>([]);
+
 
   const fetchReports = async () => {
     setLoading(true);
@@ -103,7 +118,17 @@ export const AdminPage: React.FC = () => {
     setTimeout(() => setActionMsg(''), 4000);
   };
 
-  const handleDeleteReport = async (reportId: string) => {
+  const triggerDeleteReport = (report: CommunityReport) => {
+    setDeleteModal({
+      isOpen: true,
+      title: 'Remove Scam Report',
+      message: `Are you sure you want to permanently delete the community report "${report.title}" from Supabase?`,
+      onConfirm: () => executeDeleteReport(report.id),
+    });
+  };
+
+  const executeDeleteReport = async (reportId: string) => {
+    setDeleteModal(prev => ({ ...prev, isOpen: false }));
     try {
       const res = await fetch(`${API_BASE}/api/v1/community/reports/${reportId}`, {
         method: 'DELETE'
@@ -116,14 +141,22 @@ export const AdminPage: React.FC = () => {
       setActionMsg(`Report permanently removed from Supabase database.`);
       setTimeout(() => setActionMsg(''), 4000);
     } catch (err: any) {
-      alert(`Deletion failed: ${err.message || 'Error removing report'}`);
+      setActionMsg(`⚠️ Delete failed: ${err.message || 'Error removing report'}`);
+      setTimeout(() => setActionMsg(''), 4000);
     }
   };
 
-  const handleDeleteUser = async (userId: string, email: string) => {
-    if (!window.confirm(`Are you sure you want to permanently delete user record "${email}"?`)) {
-      return;
-    }
+  const triggerDeleteUser = (user: SystemUser) => {
+    setDeleteModal({
+      isOpen: true,
+      title: 'Delete User Account',
+      message: `Are you sure you want to permanently delete user record "${user.email}" from Supabase? This action cannot be undone.`,
+      onConfirm: () => executeDeleteUser(user.id, user.email),
+    });
+  };
+
+  const executeDeleteUser = async (userId: string, email: string) => {
+    setDeleteModal(prev => ({ ...prev, isOpen: false }));
     try {
       const res = await fetch(`${API_BASE}/api/v1/auth/admin/user/${userId}`, {
         method: 'DELETE'
@@ -136,10 +169,10 @@ export const AdminPage: React.FC = () => {
       setActionMsg(`User record ${email} deleted from Supabase.`);
       setTimeout(() => setActionMsg(''), 4000);
     } catch (err: any) {
-      alert(`User delete error: ${err.message}`);
+      setActionMsg(`⚠️ Delete error: ${err.message}`);
+      setTimeout(() => setActionMsg(''), 4000);
     }
   };
-
 
   const filteredUsers = users.filter(u => u.email.toLowerCase().includes(searchTerm.toLowerCase()));
   const filteredReports = reports.filter(r => r.title.toLowerCase().includes(searchTerm.toLowerCase()) || r.category.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -168,7 +201,7 @@ export const AdminPage: React.FC = () => {
 
         <button 
           onClick={fetchReports} 
-          className="px-4 py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.1] text-xs font-semibold flex items-center gap-2 transition"
+          className="px-4 py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.1] text-xs font-semibold flex items-center gap-2 transition cursor-pointer"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
           Refresh Stats
@@ -215,7 +248,7 @@ export const AdminPage: React.FC = () => {
           <div className="flex gap-2 overflow-x-auto pb-1 sm:pb-0">
             <button
               onClick={() => setActiveTab('users')}
-              className={`px-3 sm:px-4 py-2 rounded-xl text-xs font-bold font-mono transition flex items-center gap-2 whitespace-nowrap ${
+              className={`px-3 sm:px-4 py-2 rounded-xl text-xs font-bold font-mono transition flex items-center gap-2 whitespace-nowrap cursor-pointer ${
                 activeTab === 'users' ? 'bg-[#2563EB] text-white shadow-lg' : 'bg-white/[0.04] text-gray-400 hover:text-white'
               }`}
             >
@@ -224,7 +257,7 @@ export const AdminPage: React.FC = () => {
             </button>
             <button
               onClick={() => setActiveTab('reports')}
-              className={`px-3 sm:px-4 py-2 rounded-xl text-xs font-bold font-mono transition flex items-center gap-2 whitespace-nowrap ${
+              className={`px-3 sm:px-4 py-2 rounded-xl text-xs font-bold font-mono transition flex items-center gap-2 whitespace-nowrap cursor-pointer ${
                 activeTab === 'reports' ? 'bg-[#2563EB] text-white shadow-lg' : 'bg-white/[0.04] text-gray-400 hover:text-white'
               }`}
             >
@@ -275,7 +308,7 @@ export const AdminPage: React.FC = () => {
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => handleTogglePlan(u.id)}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
                             u.plan === 'pro'
                               ? 'bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400'
                               : 'bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400'
@@ -286,8 +319,8 @@ export const AdminPage: React.FC = () => {
                         </button>
 
                         <button
-                          onClick={() => handleDeleteUser(u.id, u.email)}
-                          className="px-2.5 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 text-xs font-bold font-mono transition flex items-center gap-1"
+                          onClick={() => triggerDeleteUser(u)}
+                          className="px-2.5 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 text-xs font-bold font-mono transition flex items-center gap-1 cursor-pointer"
                           title="Delete user record"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -342,11 +375,7 @@ export const AdminPage: React.FC = () => {
                   </div>
 
                   <button
-                    onClick={() => {
-                      if (window.confirm(`Are you sure you want to remove report "${report.title}" from public community feed?`)) {
-                        handleDeleteReport(report.id);
-                      }
-                    }}
+                    onClick={() => triggerDeleteReport(report)}
                     className="px-3 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 shrink-0 transition flex items-center gap-1.5 text-xs font-bold font-mono cursor-pointer"
                     title="Remove from public feed"
                   >
@@ -359,6 +388,16 @@ export const AdminPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Glassmorphism Confirmation Modal */}
+      <ConfirmModal
+        isOpen={deleteModal.isOpen}
+        title={deleteModal.title}
+        message={deleteModal.message}
+        onConfirm={deleteModal.onConfirm}
+        onClose={() => setDeleteModal(prev => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 };
+
