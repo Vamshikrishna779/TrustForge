@@ -54,12 +54,53 @@ interface ReportData {
 interface Message {
   sender: 'user' | 'agent';
   text: string;
+  isNew?: boolean;
 }
+
+const TypewriterText = ({ text, isNew }: { text: string; isNew?: boolean }) => {
+  const [displayedText, setDisplayedText] = useState(isNew ? '' : text);
+  const [isTyping, setIsTyping] = useState(isNew);
+
+  useEffect(() => {
+    if (!isNew) {
+      setDisplayedText(text);
+      setIsTyping(false);
+      return;
+    }
+
+    const words = text.split(' ');
+    let currentIdx = 0;
+    setIsTyping(true);
+    setDisplayedText('');
+
+    const timer = setInterval(() => {
+      currentIdx++;
+      if (currentIdx <= words.length) {
+        setDisplayedText(words.slice(0, currentIdx).join(' '));
+      } else {
+        setIsTyping(false);
+        clearInterval(timer);
+      }
+    }, 35);
+
+    return () => clearInterval(timer);
+  }, [text, isNew]);
+
+  return (
+    <span className="inline">
+      {renderMarkdown(displayedText)}
+      {isTyping && (
+        <span className="inline-block w-1.5 h-3 bg-[#00E5FF] ml-1 animate-pulse align-middle rounded-full" />
+      )}
+    </span>
+  );
+};
 
 interface ReportProps {
   reportId?: string;
   onBack?: () => void;
 }
+
 
 export default function Report({ reportId: propReportId, onBack: propOnBack }: ReportProps) {
   const { reportId: paramReportId } = useParams<{ reportId: string }>();
@@ -97,12 +138,12 @@ export default function Report({ reportId: propReportId, onBack: propOnBack }: R
         const data = await response.json();
         setReport(data);
         const verdictStr = (data.analysis_details?.verdict || 'MEDIUM_RISK').replace('_', ' ');
-        const categoryStr = data.analysis_details?.category || data.type || 'security report';
         const scoreVal = data.trust_score ?? 50;
         setChatMessages([
           { 
             sender: 'agent', 
-            text: `Hello! I have completed analyzing this ${categoryStr}. Verdict is rated as ${verdictStr} (Trust Score: ${scoreVal}/100). Ask me any follow-up questions about red flags, payment demands, company links, or safety guidance!` 
+            text: `Hey there! 👋 I've thoroughly reviewed this document. Overall Trust Score is **${scoreVal}/100** (**${verdictStr}**). What would you like to know about red flags, company safety, or next steps?`,
+            isNew: false
           }
         ]);
       } catch (err: any) {
@@ -114,12 +155,10 @@ export default function Report({ reportId: propReportId, onBack: propOnBack }: R
     fetchReport();
   }, [reportId]);
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!userInput.trim() || chatLoading) return;
+  const sendQuestionText = async (questionText: string) => {
+    if (!questionText.trim() || chatLoading) return;
 
-    const userMsg = userInput.trim();
-    setChatMessages((prev) => [...prev, { sender: 'user', text: userMsg }]);
+    setChatMessages((prev) => [...prev, { sender: 'user', text: questionText }]);
     setUserInput('');
     setChatLoading(true);
 
@@ -127,16 +166,21 @@ export default function Report({ reportId: propReportId, onBack: propOnBack }: R
       const response = await fetch(`${API_BASE}/api/v1/scan/report/${reportId}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMsg }),
+        body: JSON.stringify({ message: questionText }),
       });
       if (!response.ok) throw new Error('Failed to get answer from agent.');
       const data = await response.json();
-      setChatMessages((prev) => [...prev, { sender: 'agent', text: data.response }]);
+      setChatMessages((prev) => [...prev, { sender: 'agent', text: data.response, isNew: true }]);
     } catch {
-      setChatMessages((prev) => [...prev, { sender: 'agent', text: 'Sorry, I encountered an issue connecting to the scanning engine. Please try again.' }]);
+      setChatMessages((prev) => [...prev, { sender: 'agent', text: 'Sorry, I encountered an issue connecting to the scanning engine. Please try again.', isNew: true }]);
     } finally {
       setChatLoading(false);
     }
+  };
+
+  const handleSendMessage = (e: React.FormEvent) => {
+    e.preventDefault();
+    sendQuestionText(userInput);
   };
 
   /* ── Loading state ─────────────────────────────────────────── */
@@ -206,7 +250,11 @@ export default function Report({ reportId: propReportId, onBack: propOnBack }: R
                 : 'bg-[#09090b]/75 border border-white/[0.05] text-gray-300'
             }`}
           >
-            {renderMarkdown(msg.text)}
+            {msg.sender === 'user' ? (
+              renderMarkdown(msg.text)
+            ) : (
+              <TypewriterText text={msg.text} isNew={msg.isNew} />
+            )}
           </div>
         </motion.div>
       ))}
@@ -214,12 +262,13 @@ export default function Report({ reportId: propReportId, onBack: propOnBack }: R
         <div className="flex justify-start">
           <div className={`bg-[#09090b]/75 border border-white/[0.05] ${large ? 'p-4 rounded-[20px] text-sm gap-2.5' : 'p-3 rounded-[16px] text-xs gap-2'} text-[#C8C8CC] flex items-center`}>
             <RefreshCw className={`${large ? 'w-4 h-4' : 'w-3.5 h-3.5'} animate-spin text-[#2563EB]`} />
-            {large ? <span>Analyzing security evidence and generating AI advice...</span> : 'Analyzing details...'}
+            {large ? <span>Analyzing evidence & formulating concise advice...</span> : 'Thinking...'}
           </div>
         </div>
       )}
     </>
   );
+
 
   /* ── Main render ───────────────────────────────────────────── */
   return (
@@ -473,13 +522,31 @@ export default function Report({ reportId: propReportId, onBack: propOnBack }: R
               <div ref={chatEndRef} />
             </div>
 
+            {/* Quick Suggestion Chips */}
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-2 shrink-0">
+              {[
+                '🚩 Main Red Flags?',
+                '💡 What should I do next?',
+                '🔍 Is this genuine?'
+              ].map((chip, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => sendQuestionText(chip.replace(/^[^\s]+\s*/, ''))}
+                  className="px-2.5 py-1 rounded-[10px] bg-white/[0.04] hover:bg-[#2563EB]/20 border border-white/[0.08] hover:border-[#2563EB]/40 text-[10px] text-gray-300 hover:text-white transition whitespace-nowrap cursor-pointer shrink-0"
+                >
+                  {chip}
+                </button>
+              ))}
+            </div>
+
             {/* Input */}
             <form onSubmit={handleSendMessage} className="flex gap-2 shrink-0">
               <input
                 type="text"
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
-                placeholder="Ask about deposits, training fee, telegram contacts..."
+                placeholder="Ask Trust Assistant a question..."
                 className="flex-1 px-4 py-2.5 glass-input rounded-[16px] text-xs text-white placeholder-gray-500 focus:outline-none"
               />
               <motion.button
@@ -492,6 +559,7 @@ export default function Report({ reportId: propReportId, onBack: propOnBack }: R
                 <Send className="w-3.5 h-3.5" />
               </motion.button>
             </form>
+
 
           </div>
           {/* END Chat Panel */}

@@ -539,26 +539,29 @@ async def chat_with_report_analyst(
             raw_text_content = f"Scanned Image Profile:\n- Filename: {report.input_data}\n- Detected Format Category: {category_text}\n- AI Image Analysis: {report.ai_summary}"
         
         chat_prompt = f"""
-        You are a cybersecurity expert analyst. You recently analyzed a document/communication and compiled this security report.
+        You are Trust Assistant, a friendly, sharp, and highly protective cybersecurity companion.
         
-        Here is the safety report details:
-        - Trust Score: {report.trust_score}
-        - AI Summary: {report.ai_summary}
+        DOCUMENT ANALYSIS SUMMARY:
+        - Trust Score: {report.trust_score}/100
         - Verdict: {report.analysis_details.get('verdict', 'UNKNOWN') if report.analysis_details else 'UNKNOWN'}
-        - Recommendations: {report.recommendations}
+        - Summary: {report.ai_summary}
+        - Red Flags & Recs: {report.analysis_details.get('red_flags', []) if report.analysis_details else []} | {report.recommendations}
         
-        Here is the verbatim transcribed text content of the scanned document/input:
+        RAW TRANSCRIPT OF SCANNED CONTENT:
         ---
-        {raw_text_content}
+        {raw_text_content[:3000]}
         ---
 
-        The user has a question regarding this document/report:
+        USER QUESTION:
         "{payload.message}"
 
-        Provide a clear, simple, and reassuring answer as a cybersecurity analyst. 
-        You have direct access to the raw document text above. Use it to answer any specific questions about authors, dates, company names, requirements, or anything else found in the text.
-        Do not hallucinate or make up facts. Focus on helping the user stay safe.
+        INSTRUCTIONS:
+        1. Be conversational, warm, and direct—like an expert tech friend giving advice.
+        2. Keep your answer brief and crisp (2-3 short bullet points or a max 2-paragraph response). Avoid long formal intro/outro boilerplate.
+        3. Directly answer the user's specific question using facts from the document text above.
+        4. If it's a scam or unsafe, clearly warn them with practical next steps.
         """
+
         
         response_text = generate_content_with_fallback(chat_prompt)
         return {"response": response_text}
