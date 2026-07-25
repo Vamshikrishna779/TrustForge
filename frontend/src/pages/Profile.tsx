@@ -66,7 +66,8 @@ export default function Profile({ user, onLogout }: ProfileProps) {
       token,
       (_updatedUser) => {
         setUpgradeLoading(false);
-        setUpgradeMsg('🎉 Welcome to Pro! Reloading...');
+        setUpgradeMsg('Welcome to Pro! Reloading...');
+
         setTimeout(() => window.location.reload(), 2000);
       },
       (errMsg) => {

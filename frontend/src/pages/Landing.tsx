@@ -93,7 +93,7 @@ export default function Landing({ onScanComplete }: LandingProps) {
 
   const tourScenarios = [
     {
-      title: '📱 WhatsApp Task Scam',
+      title: 'WhatsApp Task Scam',
       type: 'Text Message',
       input: '"Earn ₹3,500/day liking YouTube videos! Contact Telegram @task_manager to claim your ₹150 instant bonus."',
       heuristics: [
@@ -106,12 +106,11 @@ export default function Landing({ onScanComplete }: LandingProps) {
       summary: 'CRITICAL RISK: Classic prepaid review task trap. Scammers promise small initial payouts before demanding large deposits to unlock earnings.'
     },
     {
-      title: '📄 Fake Offer Letter PDF',
+      title: 'Fake Offer Letter PDF',
       type: 'PDF Document',
       input: 'Appointment Letter PDF with forged company seal. Demands refundable laptop equipment fee via personal UPI handle hr-dept@ybl.',
       heuristics: [
         { label: 'Upfront Payment Request', status: 'flagged', detail: 'Demands upfront deposit prior to onboarding' },
-
         { label: 'Free-Mail HR Contact', status: 'flagged', detail: 'Sender email uses generic free domain' },
         { label: 'Unregistered UPI ID', status: 'flagged', detail: 'Personal UPI handle attached to corporate offer' }
       ],
@@ -120,7 +119,7 @@ export default function Landing({ onScanComplete }: LandingProps) {
       summary: 'HIGH RISK: Fraudulent offer letter. Legitimate employers never charge candidates security deposits for laptops or equipment.'
     },
     {
-      title: '🌐 Phishing Login Portal',
+      title: 'Phishing Login Portal',
       type: 'Website URL',
       input: 'https://official-candidate-verify-login.xyz (Requesting Aadhaar number & OTP to download offer letter)',
       heuristics: [
@@ -136,26 +135,27 @@ export default function Landing({ onScanComplete }: LandingProps) {
 
   const knowledgeHubGuides = [
     {
-      title: '🛡️ How to Spot Fake Offer Letters & Forged Seals',
+      title: 'How to Spot Fake Offer Letters & Forged Seals',
       summary: 'Identify forged corporate stamps, generic HR email senders, and hidden upfront fee demands.',
       details: 'Real corporate offer letters originate from official domain emails (e.g. hr@company.com), never generic Gmail or Yahoo accounts. Genuine employers never charge candidates laptop fees, training deposits, or document processing charges.'
     },
     {
-      title: '🚩 Telegram "Prepaid Review Task" Scam Pattern',
+      title: 'Telegram "Prepaid Review Task" Scam Pattern',
       summary: 'How scammers trick candidates with small initial payouts before stealing high deposit amounts.',
       details: 'Scammers message you on WhatsApp offering ₹150 for liking 3 YouTube videos. Once you join Telegram, they demand ₹2,000 to unlock "VIP tasks". Never deposit money to receive job earnings.'
     },
     {
-      title: '💳 UPI Security Deposit & Registration Fee Red Flags',
+      title: 'UPI Security Deposit & Registration Fee Red Flags',
       summary: 'Why no legitimate Indian employer will ask for UPI transfers prior to joining.',
       details: 'Any request to send money via UPI (e.g. name@okaxis, HR@ybl) for interview registration, ID card creation, or laptop shipping is 100% advance-fee fraud.'
     },
     {
-      title: '📧 Official Email Domains vs Free-Mail Impersonators',
+      title: 'Official Email Domains vs Free-Mail Impersonators',
       summary: 'Checking SPF, DKIM, and domain WHOIS age before trusting a recruiter email.',
       details: 'Scammers frequently create domains that look like real companies with minor typos. Always inspect the exact domain URL and avoid replying to free-mail senders.'
     }
   ];
+
 
 
   // Pro Upgrade & Capacity Lock State
@@ -241,7 +241,8 @@ export default function Landing({ onScanComplete }: LandingProps) {
       token,
       (_updatedUser) => {
         setUpgradeLoading(false);
-        setUpgradeMsg('🎉 Welcome to Pro! Your plan has been activated. Refresh to see Pro features.');
+        setUpgradeMsg('Welcome to Pro! Your plan has been activated. Refresh to see Pro features.');
+
         // Optionally force a page reload so App.tsx re-reads updated user from localStorage
         setTimeout(() => window.location.reload(), 2000);
       },

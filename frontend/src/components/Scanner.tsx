@@ -344,7 +344,11 @@ export default function Scanner({ onScanComplete }: ScannerProps) {
           >
             <div className="space-y-0.5">
               <h3 className="text-sm font-heading font-semibold text-white">Analyzing Document</h3>
-              <p className="text-[11px] text-[#71717A] font-mono truncate">📄 {file?.name}</p>
+              <p className="text-[11px] text-[#71717A] font-mono truncate flex items-center gap-1">
+                <FileText className="w-3.5 h-3.5 text-[#00A4B4] shrink-0" />
+                <span className="truncate">{file?.name}</span>
+              </p>
+
             </div>
 
             {/* Progress bar */}
