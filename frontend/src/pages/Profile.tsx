@@ -191,10 +191,10 @@ export default function Profile({ user, onLogout }: ProfileProps) {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.97 }}
               onClick={onLogout}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-[12px] bg-white/[0.04] border border-white/[0.06] hover:border-[#EF4444]/40 hover:text-[#EF4444] text-xs font-semibold text-[#8AB4CE] transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-[12px] bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 text-xs font-bold text-red-400 transition-all cursor-pointer shadow-sm"
             >
               <LogOut className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Logout</span>
+              <span>Log Out</span>
             </motion.button>
           </div>
         </div>

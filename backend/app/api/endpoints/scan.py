@@ -95,18 +95,19 @@ async def scan_document(
     except ResourceExhausted:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail="Gemini API rate limit exceeded across all models. Please wait 30 seconds and retry."
+            detail="AI Security Engine is currently experiencing high demand. Please wait a few seconds and retry."
         )
-    except GoogleAPICallError as e:
+    except GoogleAPICallError:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=f"Gemini API service error: {str(e)}"
+            detail="AI Verification Service temporarily unavailable. Please retry in a few moments."
         )
-    except Exception as e:
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Scan failed: {str(e)}"
+            detail="Security scan could not be completed. Please check your input file and try again."
         )
+
 
 @router.post("/job-offer", deprecated=True)
 async def scan_job_offer(
@@ -217,18 +218,19 @@ async def scan_copied_text(
     except ResourceExhausted:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail="Gemini API rate limit exceeded across all models. Please wait 30 seconds and retry."
+            detail="AI Security Engine is currently experiencing high demand. Please wait a few seconds and retry."
         )
-    except GoogleAPICallError as e:
+    except GoogleAPICallError:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=f"Gemini API service error: {str(e)}"
+            detail="AI Verification Service temporarily unavailable. Please retry in a few moments."
         )
-    except Exception as e:
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Scan failed: {str(e)}"
+            detail="Text analysis could not be completed. Please check your message and try again."
         )
+
 
 @router.post("/website")
 async def scan_website_url(
@@ -362,17 +364,17 @@ async def scan_website_url(
     except ResourceExhausted:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail="Gemini API rate limit exceeded across all models. Please wait 30 seconds and retry."
+            detail="AI Security Engine is currently experiencing high demand. Please wait a few seconds and retry."
         )
-    except GoogleAPICallError as e:
+    except GoogleAPICallError:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=f"Gemini API service error: {str(e)}"
+            detail="AI Verification Service temporarily unavailable. Please retry in a few moments."
         )
-    except Exception as e:
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"URL Scan failed: {str(e)}"
+            detail="URL Scan could not be completed. Please check your web address and try again."
         )
 
 @router.post("/email")
@@ -493,18 +495,19 @@ async def scan_email_sender(
     except ResourceExhausted:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail="Gemini API rate limit exceeded across all models. Please wait 30 seconds and retry."
+            detail="AI Security Engine is currently experiencing high demand. Please wait a few seconds and retry."
         )
-    except GoogleAPICallError as e:
+    except GoogleAPICallError:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=f"Gemini API service error: {str(e)}"
+            detail="AI Verification Service temporarily unavailable. Please retry in a few moments."
         )
-    except Exception as e:
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Email Scan failed: {str(e)}"
+            detail="Email address verification could not be completed. Please try again."
         )
+
 
 @router.get("/report/{report_id}")
 def get_report(report_id: str, db: Session = Depends(get_db)):

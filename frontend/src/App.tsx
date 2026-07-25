@@ -9,9 +9,11 @@ import Settings from './pages/Settings';
 import Profile from './pages/Profile';
 import { AdminPage } from './pages/Admin';
 import { TermsPage } from './pages/Terms';
-import { Sparkles, LayoutDashboard, MessageSquare, KeyRound, LogOut, User, Menu, ShieldAlert, Download, X as CloseIcon } from 'lucide-react';
+import { NotificationCenter } from './components/NotificationCenter';
+import { Sparkles, LayoutDashboard, MessageSquare, KeyRound, User, Menu, ShieldAlert, Download, X as CloseIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect, useRef } from 'react';
+
 
 // ── PWA Install Banner Component ──────────────────────────────
 function InstallAppBanner() {
@@ -24,6 +26,7 @@ function InstallAppBanner() {
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
     if (isStandalone || localStorage.getItem('tf_app_installed') === 'true') {
       setIsInstalled(true);
+      setIsVisible(false);
       return;
     }
 
@@ -37,77 +40,65 @@ function InstallAppBanner() {
       setIsInstalled(true);
       setIsVisible(false);
       localStorage.setItem('tf_app_installed', 'true');
+      setDeferredPrompt(null);
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
 
-    // Auto-close banner completely after 10 seconds if not installed
-    const timer = setTimeout(() => {
-      setIsVisible(false);
-    }, 10000);
-
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
-      clearTimeout(timer);
     };
   }, []);
 
-  // DO NOT SHOW AT ALL IF INSTALLED OR TIMED OUT
-  if (isInstalled || !isVisible) return null;
-
   const handleInstallClick = async () => {
-    if (!deferredPrompt) {
-      alert('To install TrustForge: Tap your browser Menu (or Share button) and select "Add to Home Screen".');
-      setIsVisible(false);
-      return;
-    }
+    if (!deferredPrompt) return;
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
     if (outcome === 'accepted') {
       setIsInstalled(true);
+      setIsVisible(false);
       localStorage.setItem('tf_app_installed', 'true');
     }
-    setIsVisible(false);
     setDeferredPrompt(null);
   };
+
+  if (isInstalled || !isVisible) return null;
 
   return (
     <AnimatePresence>
       <motion.div
-        key="banner"
-        initial={{ y: 80, opacity: 0 }}
+        initial={{ y: -50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        exit={{ y: 80, opacity: 0 }}
-        transition={{ duration: 0.3 }}
-        className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:max-w-sm z-50 p-4 rounded-[20px] glass-card border border-[#00A4B4]/40 bg-[#04101B]/95 shadow-[0_10px_40px_rgba(0,0,0,0.6)] flex items-center justify-between gap-3"
+        exit={{ y: -50, opacity: 0 }}
+        className="bg-gradient-to-r from-[#00A4B4] via-[#0097A7] to-[#002855] border-b border-[#00A4B4]/40 text-white px-4 py-2.5 shadow-lg relative z-[60]"
       >
-        <div className="flex items-center gap-3">
-          <img src="/logo.png" alt="TrustForge App" className="w-10 h-10 object-contain shrink-0" />
-          <div>
-            <p className="text-xs font-bold text-white font-heading">Install TrustForge App</p>
-            <p className="text-[10px] text-[#8AB4CE]">Add to Home Screen for fast offline scans</p>
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 text-xs font-semibold">
+          <div className="flex items-center gap-2">
+            <div className="p-1 rounded-md bg-white/10 shrink-0">
+              <Download className="w-4 h-4 text-[#00E5FF]" />
+            </div>
+            <span>
+              Get <strong className="font-extrabold text-[#00E5FF]">TrustForge Mobile App</strong> — Scan Scams Anywhere Offline!
+            </span>
           </div>
-        </div>
 
-        <div className="flex items-center gap-1.5 shrink-0">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={handleInstallClick}
-            className="px-3.5 py-2 rounded-[12px] bg-gradient-to-r from-[#002855] to-[#0097A7] text-white text-xs font-bold transition-all shadow-[0_4px_12px_rgba(0,151,167,0.35)] flex items-center gap-1.5 cursor-pointer"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>Install</span>
-          </motion.button>
-          <button
-            onClick={() => setIsVisible(false)}
-            className="p-1.5 text-gray-400 hover:text-white rounded-lg transition cursor-pointer"
-            aria-label="Close install prompt"
-          >
-            <CloseIcon className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={handleInstallClick}
+              className="px-3.5 py-1.5 rounded-lg bg-white text-[#002855] hover:bg-[#00E5FF] hover:text-black font-extrabold text-[11px] font-mono transition shadow-md cursor-pointer flex items-center gap-1.5"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>INSTALL APK</span>
+            </button>
+            <button
+              onClick={() => setIsVisible(false)}
+              className="p-1 rounded-md hover:bg-white/10 text-white/80 hover:text-white transition"
+            >
+              <CloseIcon className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </motion.div>
     </AnimatePresence>
@@ -115,7 +106,8 @@ function InstallAppBanner() {
 }
 
 // ── Navbar ────────────────────────────────────────────────────
-function Navbar({ isLoggedIn, user, onLogout }: { isLoggedIn: boolean; user: any; onLogout: () => void }) {
+function Navbar({ isLoggedIn, user }: { isLoggedIn: boolean; user: any; onLogout?: () => void }) {
+
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);
@@ -197,15 +189,7 @@ function Navbar({ isLoggedIn, user, onLogout }: { isLoggedIn: boolean; user: any
             {isLoggedIn && user?.email === 'vamshikrishna9608@gmail.com' && navItem('/admin', 'Admin Portal', ShieldAlert, true)}
 
             {isLoggedIn ? (
-              <motion.button
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={onLogout}
-                className="flex items-center gap-1.5 py-1.5 px-3 rounded-[12px] text-xs font-semibold text-[#C8C8CC] hover:text-[#DC2626] cursor-pointer transition-all bg-transparent border-0"
-              >
-                <LogOut className="w-3.5 h-3.5" />
-                <span>Logout</span>
-              </motion.button>
+              <NotificationCenter />
             ) : (
               navItem('/auth', 'Sign In', KeyRound)
             )}
@@ -229,19 +213,14 @@ function Navbar({ isLoggedIn, user, onLogout }: { isLoggedIn: boolean; user: any
               {isLoggedIn && user?.email === 'vamshikrishna9608@gmail.com' && navItem('/admin', 'Admin Portal', ShieldAlert, true)}
 
               {isLoggedIn ? (
-                <button
-                  onClick={() => {
-                    setIsOpen(false);
-                    onLogout();
-                  }}
-                  className="flex items-center justify-center gap-2.5 py-2.5 px-3 rounded-[12px] text-xs font-semibold text-[#C8C8CC] hover:text-[#DC2626] cursor-pointer transition-all bg-white/[0.03] border border-white/[0.05] w-full text-center"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span>Logout</span>
-                </button>
+                <div className="pt-2 border-t border-white/[0.05] flex items-center justify-between px-2">
+                  <span className="text-xs text-gray-400 font-mono">Notifications</span>
+                  <NotificationCenter />
+                </div>
               ) : (
                 navItem('/auth', 'Sign In', KeyRound)
               )}
+
             </motion.div>
           )}
         </AnimatePresence>

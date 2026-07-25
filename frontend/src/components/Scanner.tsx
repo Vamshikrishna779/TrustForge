@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { API_BASE } from '../api';
 import { Upload, AlertTriangle, ShieldAlert, Sparkles, CheckCircle2, RefreshCw } from 'lucide-react';
+import { sanitizeErrorMessage } from '../utils/errorSanitizer';
 
 interface ScannerProps {
   onScanComplete: (reportId: string) => void;
 }
+
 
 export default function Scanner({ onScanComplete }: ScannerProps) {
   const [isDragActive, setIsDragActive] = useState(false);
@@ -88,9 +90,10 @@ export default function Scanner({ onScanComplete }: ScannerProps) {
       }, 1500);
 
     } catch (err: any) {
-      setErrorMsg(err.message || 'Something went wrong during the scan.');
+      setErrorMsg(sanitizeErrorMessage(err, 'Security scan could not be completed. Please try again.'));
       setStatus('error');
     }
+
   };
 
   const handleDrop = async (e: React.DragEvent) => {

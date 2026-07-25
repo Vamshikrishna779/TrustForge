@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Mail, Lock, Sparkles, Cloud, Key, BookmarkCheck, ArrowRight, RefreshCw, AlertCircle, Star, CheckCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { API_BASE } from '../api';
+import { sanitizeErrorMessage } from '../utils/errorSanitizer';
 
 interface AuthProps {
   onLogin?: (user: any) => void;
@@ -62,11 +63,12 @@ export default function Auth({ onLogin }: AuthProps) {
         setIsLogin(true);
       }
     } catch (err: any) {
-      setError(err.message || 'Something went wrong.');
+      setError(sanitizeErrorMessage(err, 'Authentication failed. Please check your details and try again.'));
     } finally {
       setLoading(false);
     }
   };
+
 
   const handleGuest = () => {
     localStorage.removeItem('tf_token');

@@ -211,6 +211,34 @@ export const AdminPage: React.FC = () => {
     setTimeout(() => setActionMsg(''), 4000);
   };
 
+  const handleSendInAppNotification = async (category: string = 'admin_alert') => {
+    if (!emailModal.userEmail) return;
+    try {
+      const targetUserId = users.find(u => u.email === emailModal.userEmail)?.id || emailModal.userEmail;
+      const res = await fetch(`${API_BASE}/api/v1/auth/admin/notify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: targetUserId,
+          user_email: emailModal.userEmail,
+          title: emailModal.subject,
+          message: emailModal.body,
+          category: category
+        })
+      });
+      if (!res.ok) {
+        throw new Error("Failed to dispatch in-app notification");
+      }
+      setEmailModal(prev => ({ ...prev, isOpen: false }));
+      setActionMsg(`In-App Notification 🔔 delivered to ${emailModal.userEmail}'s Navbar Bell!`);
+      setTimeout(() => setActionMsg(''), 4000);
+    } catch (err: any) {
+      setActionMsg(`⚠️ Notification dispatch warning: ${err.message}`);
+      setTimeout(() => setActionMsg(''), 4000);
+    }
+  };
+
+
   const filteredUsers = users.filter(u => 
     u.email.toLowerCase().includes(searchTerm.toLowerCase()) || 
     (u.name && u.name.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -494,22 +522,31 @@ export const AdminPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-2">
+            <div className="flex flex-wrap items-center justify-end gap-2.5 pt-2">
               <button
                 onClick={() => setEmailModal(prev => ({ ...prev, isOpen: false }))}
-                className="px-4 py-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-xs font-semibold text-gray-300 transition cursor-pointer"
+                className="px-3.5 py-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-xs font-semibold text-gray-300 transition cursor-pointer"
               >
                 Cancel
               </button>
 
               <button
                 onClick={handleSendEmail}
-                className="px-5 py-2 rounded-xl bg-gradient-to-r from-[#0097A7] to-[#00B4D8] text-white text-xs font-bold font-mono transition flex items-center gap-2 shadow-lg shadow-[#00A4B4]/30 cursor-pointer"
+                className="px-3.5 py-2 rounded-xl bg-white/[0.08] hover:bg-white/[0.15] border border-white/[0.1] text-white text-xs font-bold font-mono transition flex items-center gap-1.5 cursor-pointer"
+              >
+                <Mail className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Open Mail (`mailto:`)</span>
+              </button>
+
+              <button
+                onClick={() => handleSendInAppNotification('admin_alert')}
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#0097A7] to-[#00B4D8] text-white text-xs font-bold font-mono transition flex items-center gap-2 shadow-lg shadow-[#00A4B4]/30 cursor-pointer"
               >
                 <Send className="w-3.5 h-3.5" />
-                <span>Open & Send Email</span>
+                <span>Send In-App Notification 🔔</span>
               </button>
             </div>
+
           </div>
         </div>
       )}

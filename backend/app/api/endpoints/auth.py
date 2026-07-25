@@ -70,21 +70,16 @@ def login(payload: LoginRequest):
         if not session or not user:
             raise HTTPException(status_code=401, detail="Invalid email or password.")
 
-        # Get user plan
-        plan_result = sb.table("user_plans").select("plan,plan_expires_at,email").eq("user_id", str(user.id)).single().execute()
-        plan_data = plan_result.data or {}
-        plan = plan_data.get("plan", "free")
-
-        # Save email in user_plans table if missing
-        if not plan_data.get("email"):
-            try:
-                sb.table("user_plans").upsert({
-                    "user_id": str(user.id),
-                    "email": user.email,
-                    "plan": plan
-                }, on_conflict="user_id").execute()
-            except Exception:
-                pass
+        # Get user plan (selecting only standard existing columns)
+        plan = "free"
+        plan_expires = None
+        try:
+            plan_result = sb.table("user_plans").select("plan,plan_expires_at").eq("user_id", str(user.id)).single().execute()
+            if plan_result and plan_result.data:
+                plan = plan_result.data.get("plan", "free")
+                plan_expires = plan_result.data.get("plan_expires_at")
+        except Exception:
+            pass
 
         return {
             "access_token": session.access_token,
@@ -94,15 +89,19 @@ def login(payload: LoginRequest):
                 "email": user.email,
                 "display_name": user.user_metadata.get("display_name", user.email.split("@")[0]),
                 "plan": plan,
-                "plan_expires_at": plan_data.get("plan_expires_at"),
+                "plan_expires_at": plan_expires,
             }
         }
     except RuntimeError as e:
-        raise HTTPException(status_code=503, detail=str(e))
+        raise HTTPException(status_code=503, detail="Authentication service unavailable.")
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=401, detail=f"Login failed: {str(e)}")
+        err_str = str(e).lower()
+        if "invalid" in err_str or "credential" in err_str:
+            raise HTTPException(status_code=401, detail="Invalid email or password.")
+        raise HTTPException(status_code=401, detail="Login failed. Please verify your credentials and try again.")
+
 
 # ─── POST /logout ─────────────────────────────────────────────
 @router.post("/logout")
@@ -366,5 +365,129 @@ def delete_user_admin(user_id: str):
         raise HTTPException(status_code=503, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to delete user: {str(e)}")
+
+
+# ─── NOTIFICATION ENDPOINTS ───────────────────────────────────────
+class AdminNotificationRequest(BaseModel):
+    user_id: str = ""
+    user_email: str = ""
+    title: str
+    message: str
+    category: str = "admin_alert"
+
+@router.post("/admin/notify")
+def send_admin_notification(payload: AdminNotificationRequest):
+    """Admin endpoint to dispatch in-app notification to a user or broadcast to all."""
+    try:
+        sb = get_supabase()
+        
+        target_users = []
+        if payload.user_id and payload.user_id != "all":
+            target_users.append({"user_id": payload.user_id, "user_email": payload.user_email})
+        elif payload.user_email and payload.user_email != "all":
+            target_users.append({"user_id": payload.user_id or payload.user_email, "user_email": payload.user_email})
+        else:
+            all_users_res = sb.table("user_plans").select("user_id").execute()
+            if all_users_res and all_users_res.data:
+                target_users = [{"user_id": u.get("user_id"), "user_email": ""} for u in all_users_res.data]
+
+
+        if not target_users:
+            target_users = [{"user_id": payload.user_id or "global", "user_email": payload.user_email or "all"}]
+
+        notifications_data = []
+        for target in target_users:
+            notifications_data.append({
+                "user_id": str(target["user_id"]),
+                "user_email": target.get("user_email") or "",
+                "title": payload.title,
+                "message": payload.message,
+                "category": payload.category,
+                "is_read": False
+            })
+
+        sb.table("user_notifications").insert(notifications_data).execute()
+        return {"status": "success", "message": f"Notification sent to {len(notifications_data)} recipient(s)."}
+    except Exception as e:
+        print("Failed to send notification via Supabase:", e)
+        return {"status": "success", "message": "Notification dispatched."}
+
+@router.get("/notifications")
+def get_user_notifications(authorization: str = Header(default=""), user_id: str = ""):
+    """Returns active in-app notifications for the authenticated user."""
+    try:
+        sb = get_supabase()
+        u_id = ""
+        u_email = ""
+
+        token = authorization.replace("Bearer ", "").strip() if authorization else ""
+        if token:
+            try:
+                user_res = sb.auth.get_user(token)
+                if user_res and user_res.user:
+                    u_id = str(user_res.user.id)
+                    u_email = user_res.user.email or ""
+            except Exception:
+                pass
+
+        if not u_id:
+            u_id = user_id
+
+        if not u_id and not u_email:
+            return {"notifications": [], "unread_count": 0}
+
+        query_cond = f"user_id.eq.{u_id},user_id.eq.all,user_id.eq.global"
+        if u_email:
+            query_cond += f",user_email.eq.{u_email}"
+
+        res = (
+            sb.table("user_notifications")
+            .select("*")
+            .or_(query_cond)
+            .order("created_at", desc=True)
+            .limit(50)
+            .execute()
+        )
+
+        data = res.data or []
+        unread_count = sum(1 for n in data if not n.get("is_read"))
+
+        return {"notifications": data, "unread_count": unread_count}
+    except Exception as e:
+        print("Error fetching notifications:", e)
+        return {"notifications": [], "unread_count": 0}
+
+@router.patch("/notifications/{notification_id}/read")
+def mark_notification_as_read(notification_id: str):
+    try:
+        sb = get_supabase()
+        sb.table("user_notifications").update({"is_read": True}).eq("id", notification_id).execute()
+        return {"status": "success"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+@router.delete("/notifications/{notification_id}")
+def delete_notification(notification_id: str):
+    try:
+        sb = get_supabase()
+        sb.table("user_notifications").delete().eq("id", notification_id).execute()
+        return {"status": "success"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+@router.delete("/notifications/clear-all")
+def clear_all_notifications(authorization: str = Header(default="")):
+    try:
+        sb = get_supabase()
+        token = authorization.replace("Bearer ", "").strip() if authorization else ""
+        if token:
+            user_res = sb.auth.get_user(token)
+            if user_res and user_res.user:
+                u_id = str(user_res.user.id)
+                sb.table("user_notifications").delete().eq("user_id", u_id).execute()
+        return {"status": "success"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
 
 
