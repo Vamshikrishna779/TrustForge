@@ -322,26 +322,27 @@ export default function Landing({ onScanComplete }: LandingProps) {
           </p>
 
 
-          {/* Live Community Scam Ticker Bar (Strictly live from Supabase, zero mock fallbacks) */}
+          {/* Live Community Scam Ticker Bar (Strictly live from Supabase, bounds-safe on mobile) */}
           {latestCommunityReport && latestCommunityReport.title && (
             <motion.div
               initial={{ opacity: 0, y: -6 }}
               animate={{ opacity: 1, y: 0 }}
-              className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-red-950/60 border border-red-500/40 text-red-200 text-xs backdrop-blur-xl max-w-xl truncate shadow-[0_0_20px_rgba(239,68,68,0.25)]"
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-950/60 border border-red-500/40 text-red-200 text-xs backdrop-blur-xl max-w-[calc(100vw-2rem)] sm:max-w-xl overflow-hidden shadow-[0_0_20px_rgba(239,68,68,0.25)]"
             >
-              <span className="flex h-2.5 w-2.5 relative shrink-0">
+              <span className="flex h-2 w-2 relative shrink-0">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
               </span>
-              <span className="font-bold text-red-400 uppercase tracking-widest text-[10px] font-mono shrink-0">Live Alert:</span>
-              <span className="truncate text-red-100 font-medium text-[11px]">
+              <span className="font-bold text-red-400 uppercase tracking-widest text-[9px] sm:text-[10px] font-mono shrink-0">Live Alert:</span>
+              <span className="truncate text-red-100 font-medium text-[10px] sm:text-[11px] flex-1 min-w-0">
                 {latestCommunityReport.title}
               </span>
-              <span className="text-[10px] text-red-300 font-mono shrink-0 ml-1 bg-red-900/60 px-2 py-0.5 rounded-full border border-red-500/30">
+              <span className="hidden sm:inline-block text-[10px] text-red-300 font-mono shrink-0 ml-1 bg-red-900/60 px-2 py-0.5 rounded-full border border-red-500/30">
                 {latestCommunityReport.upvotes || 0} confirmed
               </span>
             </motion.div>
           )}
+
 
           {/* Quick search bar */}
           <form onSubmit={handleVerifyFormSubmit} className="max-w-2xl mx-auto pt-1 w-full">
