@@ -213,11 +213,13 @@ export default function Landing({ onScanComplete }: LandingProps) {
   const itemVariants = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { type: 'tween', ease: 'easeOut', duration: 0.4 } as const } };
 
   const tabConfig = {
-    website:  { text: 'Website',  icon: Link2,         placeholder: 'e.g. google.com or https://official-amazon-jobs.in', label: 'Verify Website Domain',    btnText: 'Verify Link' },
-    email:    { text: 'Email',    icon: Mail,          placeholder: 'e.g. recruitment-team@amazon.in',                    label: 'Verify Recruiter Email',   btnText: 'Verify Email' },
+    website:  { text: 'Website',  icon: Link2,         placeholder: 'e.g. https://job-verification-portal.net',       label: 'Verify Website Domain',    btnText: 'Verify Link' },
+    email:    { text: 'Email',    icon: Mail,          placeholder: 'e.g. hr-recruitment-team@gmail.com',                 label: 'Verify Recruiter Email',   btnText: 'Verify Email' },
     text:     { text: 'Text',     icon: FileCheck,     placeholder: 'Paste suspicious WhatsApp, SMS, or Telegram job offers...',  label: 'Paste Message Text',  btnText: 'Run Text Scan' },
     document: { text: 'Document', icon: FileText,      placeholder: '',                                                   label: 'Upload Document',          btnText: '' },
-    training: { text: 'Training', icon: GraduationCap, placeholder: 'e.g. Creonex Development Academy',                  label: 'Academy / Provider Name', btnText: 'Scan Program' },
+    training: { text: 'Training', icon: GraduationCap, placeholder: 'e.g. 100% Placement Guarantee Academy',              label: 'Academy / Provider Name', btnText: 'Scan Program' },
+
+
   };
 
   // ── Pricing Plans ────────────────────────────────────────────
@@ -370,26 +372,30 @@ export default function Landing({ onScanComplete }: LandingProps) {
           </form>
 
           {/* Quick chips */}
-          <div className="flex flex-wrap items-center justify-center gap-2 text-xs text-gray-300 font-medium pt-1">
+          <div className="flex flex-wrap items-center justify-center gap-2 text-xs text-gray-300 font-medium pt-1 max-w-4xl mx-auto">
             <span className="text-[#8AB4CE]">Try Quick Scan:</span>
             {[
-              ['website', 'google.com'],
-              ['website', 'amazon.in'],
-              ['email', 'hr@tcs.com'],
-              ['training', 'Creonex Academy'],
-              ['text', 'Pay ₹500 laptop fee']
+              ['text', 'Pay ₹500 Laptop Fee'],
+              ['website', 'job-verification-portal.net'],
+              ['email', 'hr-recruitment-team@gmail.com'],
+              ['text', 'Contact Telegram @hr_manager'],
+              ['training', '100% Placement Guarantee Academy'],
+              ['text', 'Earn ₹3,000/day Data Entry Task'],
+              ['website', 'secure-login-update.xyz'],
+              ['email', 'interview-confirmation-urgent@yahoo.com']
             ].map(([tab, val]) => (
               <motion.button
                 key={val}
                 whileHover={{ scale: 1.04, color: '#fff' }}
                 whileTap={{ scale: 0.96 }}
                 onClick={() => handleChipClick(tab as ScanTab, val)}
-                className="px-3.5 py-1.5 rounded-full bg-[#0A2034]/80 border border-[#00A4B4]/30 hover:border-[#00E5FF] hover:bg-[#0097A7]/20 text-gray-200 hover:text-white shadow-[0_0_12px_rgba(0,164,180,0.15)] transition-all cursor-pointer font-mono text-[11px]"
+                className="px-3 py-1.5 rounded-full bg-[#0A2034]/80 border border-[#00A4B4]/30 hover:border-[#00E5FF] hover:bg-[#0097A7]/20 text-gray-200 hover:text-white shadow-[0_0_12px_rgba(0,164,180,0.15)] transition-all cursor-pointer font-mono text-[11px]"
               >
                 ⚡ {val}
               </motion.button>
             ))}
           </div>
+
         </motion.header>
 
         {/* ── 2. STATS BAR ────────────────────────────────────── */}
@@ -486,8 +492,9 @@ export default function Landing({ onScanComplete }: LandingProps) {
                     ) : (
                       <div className="space-y-3">
                         <input type="text" required value={searchVal} onChange={(e) => setSearchVal(e.target.value)}
-                          placeholder="e.g. Creonex Development Academy"
+                          placeholder="e.g. 100% Placement Guarantee Academy"
                           className="w-full px-4 py-3 glass-input rounded-[16px] text-sm text-white placeholder-[#333] focus:outline-none" />
+
                         <input type="text" value={academyUrl} onChange={(e) => setAcademyUrl(e.target.value)}
                           placeholder="Website URL (Optional)"
                           className="w-full px-4 py-3 glass-input rounded-[16px] text-sm text-white placeholder-[#333] focus:outline-none" />

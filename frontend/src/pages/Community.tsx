@@ -364,12 +364,13 @@ export default function Community() {
                     onChange={(e) => setSuspectEntity(e.target.value)}
                     placeholder={
                       category === 'whatsapp_task' ? 'e.g. WhatsApp +91 98... / Telegram @task_admin' :
-                      category === 'upfront_fee' ? 'e.g. Claimed to be Wipro HR / UPI name@ybl' :
-                      category === 'placement_academy' ? 'e.g. Creonex Development Academy' :
-                      category === 'fake_recruiter' ? 'e.g. hr.tcs.hiring@gmail.com' :
-                      category === 'phishing_url' ? 'e.g. amazon-jobs-portal.xyz' :
-                      'e.g., Claimed company name, phone number, or URL'
+                      category === 'upfront_fee' ? 'e.g. Claimed HR Rep / UPI handle@ybl' :
+                      category === 'placement_academy' ? 'e.g. 100% Placement Guarantee Academy' :
+                      category === 'fake_recruiter' ? 'e.g. hr.hiring.team@gmail.com' :
+                      category === 'phishing_url' ? 'e.g. job-portal-verify.xyz' :
+                      'e.g., Claimed entity, phone number, or URL'
                     }
+
                     className="w-full px-4 py-2.5 glass-input rounded-[16px] text-xs text-white placeholder-gray-600 focus:outline-none"
                   />
                 </div>
