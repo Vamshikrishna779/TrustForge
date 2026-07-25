@@ -154,8 +154,15 @@ def get_profile(authorization: str = Header(default="")):
                 plan = p_data.get("plan", "free")
                 plan_activated = p_data.get("plan_activated_at")
                 plan_expires = p_data.get("plan_expires_at")
+            else:
+                # Auto-register user into user_plans table
+                sb.table("user_plans").upsert({
+                    "user_id": str(user.id),
+                    "plan": "free"
+                }, on_conflict="user_id").execute()
         except Exception:
             pass
+
 
         # Extract display name from metadata or full_name or email
         display_name = user.user_metadata.get("display_name") or user.user_metadata.get("full_name") or user.user_metadata.get("name") or user.email.split("@")[0]
