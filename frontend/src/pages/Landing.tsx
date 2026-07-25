@@ -343,9 +343,9 @@ export default function Landing({ onScanComplete }: LandingProps) {
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#00A4B4]/40 bg-[#0097A7]/15 backdrop-blur-md text-[#00E5FF] text-[10px] sm:text-[11px] font-semibold tracking-wide uppercase font-mono shadow-[0_0_15px_rgba(0,164,180,0.2)]"
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#00A4B4]/40 bg-[#0097A7]/15 backdrop-blur-md text-[#00E5FF] text-[11px] font-semibold tracking-wide uppercase font-mono shadow-[0_0_20px_rgba(0,164,180,0.25)]"
           >
-            <Zap className="w-3.5 h-3.5 text-[#00E5FF] animate-pulse" /> AI-Powered Threat Intelligence Platform
+            <Zap className="w-3.5 h-3.5 text-[#00E5FF] animate-pulse" /> ⚡ Early Access · Built for Candidate Cyber Protection
           </motion.div>
 
           <h1 className="text-4xl sm:text-6xl md:text-7xl font-heading font-extrabold tracking-tight text-white leading-[1.08] max-w-4xl">
@@ -355,10 +355,23 @@ export default function Landing({ onScanComplete }: LandingProps) {
             </span>
           </h1>
 
-          <p className="text-xs sm:text-base text-[#8AB4CE] max-w-2xl mx-auto font-normal leading-relaxed px-2">
-            Verify websites, documents, recruiter emails, WhatsApp messages & training programs
-            using deterministic rule checks and TrustForge AI Cyber Engine — completely free.
+          <p className="text-sm sm:text-base text-[#8AB4CE] max-w-2xl mx-auto font-normal leading-relaxed px-2">
+            Instantly detect fake offer letters, WhatsApp task traps, phishing domains & upfront fee scams in under 30 seconds.
           </p>
+
+          {/* Quick Value Bullets */}
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs text-[#A1A1AA] font-mono pt-1">
+            <span className="flex items-center gap-1.5 text-emerald-400">
+              <CheckCircle className="w-3.5 h-3.5" /> 100% Free Verification
+            </span>
+            <span className="flex items-center gap-1.5 text-cyan-400">
+              <ShieldCheck className="w-3.5 h-3.5" /> Zero Data Retention
+            </span>
+            <span className="flex items-center gap-1.5 text-[#00E5FF]">
+              <Zap className="w-3.5 h-3.5" /> Live AI Web Intelligence
+            </span>
+          </div>
+
 
 
           {/* Live Community Scam Ticker Bar (Strictly live from Supabase, bounds-safe on mobile) */}
@@ -457,16 +470,37 @@ export default function Landing({ onScanComplete }: LandingProps) {
           </div>
         </motion.section>
 
-        {/* ── 3. SCANNER WIDGET ────────────────────────────────── */}
+        {/* ── 3. SCANNER WIDGET (Browser Frame) ────────────────── */}
         <motion.section ref={scannerRef} variants={itemVariants} className="w-full scroll-mt-24">
-          <div className="p-6 rounded-[24px] glass-card border border-white/[0.07] space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/[0.05] pb-5 gap-4">
-              <div>
-                <h3 className="text-sm font-bold uppercase tracking-widest text-white font-mono flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-[#00A4B4]" /> Verify Anything
-                </h3>
-                <p className="text-[11px] text-[#8AB4CE] mt-1">Select the verification channel for AI analysis.</p>
+          <div className="rounded-[28px] bg-[#070D14] border border-[#00A4B4]/40 shadow-[0_25px_70px_rgba(0,164,180,0.2)] overflow-hidden">
+            {/* macOS Browser Titlebar */}
+            <div className="px-5 py-3.5 bg-[#0D1B2A] border-b border-[#00A4B4]/20 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="w-3 h-3 rounded-full bg-red-500/80 inline-block" />
+                <span className="w-3 h-3 rounded-full bg-yellow-500/80 inline-block" />
+                <span className="w-3 h-3 rounded-full bg-emerald-500/80 inline-block" />
               </div>
+              
+              <div className="flex-1 max-w-md mx-auto px-4 py-1 rounded-lg bg-[#070D14]/80 border border-[#00A4B4]/25 text-[11px] text-[#8AB4CE] font-mono flex items-center gap-2 truncate">
+                <Lock className="w-3 h-3 text-emerald-400 shrink-0" />
+                <span className="truncate">https://trustforge.app/scanner</span>
+              </div>
+
+              <div className="flex items-center gap-1.5 text-[10px] font-mono text-emerald-400 shrink-0">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                <span className="hidden sm:inline">Engine Live</span>
+              </div>
+            </div>
+
+            <div className="p-5 sm:p-7 space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/[0.05] pb-5 gap-4">
+                <div>
+                  <h3 className="text-sm font-bold uppercase tracking-widest text-white font-mono flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-[#00A4B4]" /> Verify Anything
+                  </h3>
+                  <p className="text-[11px] text-[#8AB4CE] mt-1">Select the verification channel for AI analysis.</p>
+                </div>
+
 
               <div className="flex flex-wrap sm:grid sm:grid-cols-5 gap-1.5 bg-[#0A2034]/80 p-1.5 border border-[#0097A7]/20 rounded-[18px] relative w-full sm:w-auto">
                 {(Object.keys(tabConfig) as ScanTab[]).map((tab) => {
@@ -563,8 +597,10 @@ export default function Landing({ onScanComplete }: LandingProps) {
                 )}
               </motion.div>
             </AnimatePresence>
+            </div>
           </div>
         </motion.section>
+
 
         {/* ── 4. HOW IT WORKS ─────────────────────────────────── */}
         <motion.section variants={itemVariants} className="space-y-8">
@@ -723,7 +759,52 @@ export default function Landing({ onScanComplete }: LandingProps) {
           </div>
         </motion.section>
 
+        {/* ── 8. PUBLIC ROADMAP & SECURITY GUARANTEE ──────────────── */}
+
+        <motion.section variants={itemVariants} className="space-y-6">
+          <div className="text-center space-y-2">
+            <p className="text-[11px] font-mono text-[#00E5FF] uppercase tracking-widest">Actively Building · Public Roadmap</p>
+            <h2 className="text-2xl sm:text-3xl font-heading font-extrabold text-white">Security Guarantee & What's Coming Next</h2>
+            <p className="text-xs sm:text-sm text-[#8AB4CE] max-w-xl mx-auto">We process scans in memory and never retain or share candidate documents or personal data.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-6 rounded-[22px] bg-[#0A2034]/70 border border-[#00A4B4]/30 space-y-3">
+              <div className="p-2.5 rounded-[12px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 w-fit">
+                <Lock className="w-5 h-5" />
+              </div>
+              <h4 className="font-heading font-bold text-white text-sm">Zero Data Retention</h4>
+              <p className="text-xs text-gray-300 font-light leading-relaxed">
+                Scanned documents and text are analyzed strictly in volatile memory and immediately discarded. No candidate resume or personal data is ever sold or saved.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-[22px] bg-[#0A2034]/70 border border-[#00A4B4]/30 space-y-3">
+              <div className="p-2.5 rounded-[12px] bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 w-fit">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <h4 className="font-heading font-bold text-white text-sm">IT Act Safe Harbor</h4>
+              <p className="text-xs text-gray-300 font-light leading-relaxed">
+                Operates strictly under Section 79 of the Information Technology Act, 2000 (India) as an automated threat intelligence & content verification engine.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-[22px] bg-[#0A2034]/70 border border-[#00A4B4]/30 space-y-3">
+              <div className="p-2.5 rounded-[12px] bg-purple-500/10 border border-purple-500/20 text-purple-400 w-fit">
+                <Zap className="w-5 h-5" />
+              </div>
+              <h4 className="font-heading font-bold text-white text-sm">Upcoming Releases (Roadmap)</h4>
+              <ul className="text-xs text-gray-300 space-y-1.5 font-mono pt-1">
+                <li className="flex items-center gap-1.5"><span className="text-emerald-400 font-bold">✓</span> Live Web News Threat Feed</li>
+                <li className="flex items-center gap-1.5"><span className="text-amber-400 font-bold">⏳</span> Chrome Scam Detector Extension</li>
+                <li className="flex items-center gap-1.5"><span className="text-amber-400 font-bold">⏳</span> WhatsApp Verification Bot</li>
+              </ul>
+            </div>
+          </div>
+        </motion.section>
+
       </motion.div>
+
 
       {/* ── 8. FOOTER ─────────────────────────────────────────── */}
       <footer className="relative z-10 mt-20 border-t border-white/[0.06] bg-[#060608]/80 backdrop-blur-md">
