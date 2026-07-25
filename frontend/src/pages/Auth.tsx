@@ -21,10 +21,54 @@ export default function Auth({ onLogin }: AuthProps) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // Scroll to top when opening Auth screen on mobile
+  // Scroll to top & process OAuth redirect hash
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Handle Supabase OAuth hash redirect (e.g. #access_token=...&refresh_token=...)
+    const hash = window.location.hash;
+    if (hash && hash.includes('access_token=')) {
+      const params = new URLSearchParams(hash.replace('#', '?'));
+      const accessToken = params.get('access_token');
+      if (accessToken) {
+        setLoading(true);
+        fetch(`${API}/profile`, {
+          headers: { Authorization: `Bearer ${accessToken}` }
+        })
+          .then(res => res.json())
+          .then(user => {
+            if (user && user.id) {
+              localStorage.setItem('tf_token', accessToken);
+              localStorage.setItem('tf_user', JSON.stringify(user));
+              if (onLogin) onLogin(user);
+              navigate('/');
+            }
+          })
+          .catch(() => {
+            setError('Google authentication processing failed.');
+          })
+          .finally(() => setLoading(false));
+      }
+    }
   }, []);
+
+  const handleGoogleLogin = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const redirectUri = window.location.origin + '/auth';
+      const res = await fetch(`${API}/google-url?redirect_to=${encodeURIComponent(redirectUri)}`);
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error('Google OAuth URL unavailable.');
+      }
+    } catch (err: any) {
+      setError(sanitizeErrorMessage(err, 'Google Sign-In failed. Please try again.'));
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,7 +113,6 @@ export default function Auth({ onLogin }: AuthProps) {
     }
   };
 
-
   const handleGuest = () => {
     localStorage.removeItem('tf_token');
     localStorage.removeItem('tf_user');
@@ -82,41 +125,22 @@ export default function Auth({ onLogin }: AuthProps) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25 }}
-      className="flex flex-col md:flex-row items-center justify-center min-h-[85vh] max-w-5xl mx-auto px-4 gap-12 text-white py-12"
+      className="flex flex-col-reverse md:flex-row items-center justify-center min-h-[85vh] max-w-5xl mx-auto px-4 gap-8 md:gap-12 text-white py-6 sm:py-12"
     >
-      {/* ── Left: Why Sign In ─────────────────────────────── */}
-      <div className="flex-1 space-y-6 max-w-md">
-        <h3 className="text-3xl font-heading font-extrabold text-white">Why Create an Account?</h3>
-        <p className="text-sm text-[#777] font-light leading-relaxed">
-          Guest mode lets you scan instantly. An account unlocks history, watchlists, and Pro Cloud Sync.
+      {/* ── Left (Bottom on Mobile): Why Sign In ─────────────────────────────── */}
+      <div className="flex-1 space-y-6 max-w-md w-full">
+        <h3 className="text-2xl sm:text-3xl font-heading font-extrabold text-white">Why Create an Account?</h3>
+        <p className="text-xs sm:text-sm text-[#777] font-light leading-relaxed">
+          Guest mode lets you scan instantly. An account unlocks permanent history, watchlists, and Pro Cloud Sync.
         </p>
-
-        {/* Free vs Pro notice */}
-        <div className="p-4 rounded-[16px] border border-white/[0.06] bg-[#0D0D10]/80 space-y-3">
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#666] font-mono">Data Storage</span>
-          </div>
-          <div className="flex items-start gap-3">
-            <div className="w-2 h-2 rounded-full bg-[#888] mt-1.5 shrink-0" />
-            <p className="text-xs text-[#777]">
-              <span className="text-white font-semibold">Free plan</span> — Data stored locally in your browser only. Signing out or clearing the app deletes everything permanently.
-            </p>
-          </div>
-          <div className="flex items-start gap-3">
-            <div className="w-2 h-2 rounded-full bg-[#14B8A6] mt-1.5 shrink-0" />
-            <p className="text-xs text-[#777]">
-              <span className="text-white font-semibold">Pro plan (₹7/mo)</span> — All scans synced to Supabase cloud. Access your full history from any device, forever.
-            </p>
-          </div>
-        </div>
 
         <div className="space-y-4">
           {[
-            { icon: Cloud, title: 'Cloud Scan Vault (Pro)', desc: 'All your reports backed up permanently in the cloud and accessible across all devices.' },
-            { icon: Key, title: 'Developer API Access (Pro)', desc: 'Use your Pro API key to run automated scans from your own tools and scripts.' },
-            { icon: BookmarkCheck, title: 'Personal Watchlists', desc: 'Bookmark suspicious domains, emails, and numbers to track and revisit later.' },
+            { icon: BookmarkCheck, title: 'Permanent History', desc: 'Save all your scan reports forever. Never lose evidence.' },
+            { icon: Cloud, title: 'Cloud Sync & Watchlists', desc: 'Scans backed up securely in Supabase cloud storage.' },
+            { icon: Key, title: 'API & Training Audits', desc: 'Direct developer access and academy verification.' },
           ].map(({ icon: Icon, title, desc }) => (
-            <div key={title} className="flex gap-4 items-start">
+            <div key={title} className="flex items-start gap-3 p-3.5 rounded-[18px] glass-card border border-white/[0.05]">
               <div className="p-2.5 bg-[#2563EB]/10 border border-[#2563EB]/25 text-[#2563EB] rounded-[12px] shrink-0 mt-0.5">
                 <Icon className="w-4 h-4" />
               </div>
@@ -138,19 +162,43 @@ export default function Auth({ onLogin }: AuthProps) {
         </div>
       </div>
 
-      {/* ── Right: Auth Card ──────────────────────────────── */}
+      {/* ── Right (Top on Mobile): Auth Card ──────────────────────────────── */}
       <div className="w-full max-w-md">
-        <div className="p-8 rounded-[24px] glass-card space-y-6 border border-white/[0.07]">
+        <div className="p-6 sm:p-8 rounded-[24px] glass-card space-y-5 sm:space-y-6 border border-white/[0.07]">
           <div className="text-center space-y-2">
-            <div className="w-14 h-14 mx-auto mb-2 flex items-center justify-center">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 mx-auto mb-1 flex items-center justify-center">
               <img src="/logo.png" alt="TrustForge Shield" className="w-full h-full object-contain" />
             </div>
-            <h3 className="text-2xl font-heading font-extrabold text-white">
+            <h3 className="text-xl sm:text-2xl font-heading font-extrabold text-white">
               {isLogin ? 'Welcome Back' : 'Create Account'}
             </h3>
             <p className="text-xs text-[#666]">
               {isLogin ? 'Sign in to access your history, reports, and Pro features.' : 'Join TrustForge. Protect yourself and others.'}
             </p>
+          </div>
+
+          {/* Google Sign In Button */}
+          <motion.button
+            type="button"
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleGoogleLogin}
+            disabled={loading}
+            className="w-full py-3 px-4 rounded-[16px] bg-white hover:bg-gray-100 text-gray-900 font-bold text-xs flex items-center justify-center gap-3 transition shadow-lg cursor-pointer border border-gray-200"
+          >
+            <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+              <path fill="#FBBC05" d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.62z" />
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+            </svg>
+            <span>Continue with Google</span>
+          </motion.button>
+
+          <div className="relative flex items-center">
+            <div className="flex-grow border-t border-white/[0.08]" />
+            <span className="flex-shrink mx-4 text-[#666] text-[11px] font-mono uppercase">or email</span>
+            <div className="flex-grow border-t border-white/[0.08]" />
           </div>
 
           {/* Tab switcher */}
@@ -204,7 +252,7 @@ export default function Auth({ onLogin }: AuthProps) {
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   placeholder="Choose a username"
-                  className="w-full px-4 py-2.5 glass-input rounded-[16px] text-xs text-white placeholder-[#333] focus:outline-none"
+                  className="w-full px-4 py-2.5 glass-input rounded-[16px] text-xs text-white placeholder-[#444] focus:outline-none"
                 />
               </div>
             )}
@@ -219,7 +267,7 @@ export default function Auth({ onLogin }: AuthProps) {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
-                  className="w-full pl-10 pr-4 py-2.5 glass-input rounded-[16px] text-xs text-white placeholder-[#333] focus:outline-none"
+                  className="w-full pl-10 pr-4 py-2.5 glass-input rounded-[16px] text-xs text-white placeholder-[#444] focus:outline-none"
                 />
               </div>
             </div>
@@ -234,7 +282,7 @@ export default function Auth({ onLogin }: AuthProps) {
                   value={pass}
                   onChange={(e) => setPass(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-4 py-2.5 glass-input rounded-[16px] text-xs text-white placeholder-[#333] focus:outline-none"
+                  className="w-full pl-10 pr-4 py-2.5 glass-input rounded-[16px] text-xs text-white placeholder-[#444] focus:outline-none"
                 />
               </div>
             </div>

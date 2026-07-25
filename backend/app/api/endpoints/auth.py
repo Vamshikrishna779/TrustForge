@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, status, Header
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 from app.services.supabase_client import get_supabase
+from app.core.config import settings
 
 router = APIRouter()
 
@@ -17,6 +18,17 @@ class LoginRequest(BaseModel):
 
 class UpgradePlanRequest(BaseModel):
     plan: str  # 'pro' | 'free'
+
+@router.get("/google-url")
+def get_google_auth_url(redirect_to: str = "https://trustforge-app.pages.dev/auth"):
+    """Returns Supabase Google OAuth authorization URL for the client."""
+    try:
+        supabase_url = settings.SUPABASE_URL.rstrip('/')
+        url = f"{supabase_url}/auth/v1/authorize?provider=google&redirect_to={redirect_to}"
+        return {"url": url}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Could not generate OAuth URL.")
+
 
 # ─── POST /register ───────────────────────────────────────────
 @router.post("/register", status_code=201)
