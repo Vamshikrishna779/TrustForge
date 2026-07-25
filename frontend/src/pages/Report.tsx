@@ -96,8 +96,14 @@ export default function Report({ reportId: propReportId, onBack: propOnBack }: R
         if (!response.ok) throw new Error('Report not found or failed to load.');
         const data = await response.json();
         setReport(data);
+        const verdictStr = (data.analysis_details?.verdict || 'MEDIUM_RISK').replace('_', ' ');
+        const categoryStr = data.analysis_details?.category || data.type || 'security report';
+        const scoreVal = data.trust_score ?? 50;
         setChatMessages([
-          { sender: 'agent', text: 'Hello, I have parsed the documents. Ask me any follow-up questions about this job offer, such as payment requests, contracts, or interview links.' }
+          { 
+            sender: 'agent', 
+            text: `Hello! I have completed analyzing this ${categoryStr}. Verdict is rated as ${verdictStr} (Trust Score: ${scoreVal}/100). Ask me any follow-up questions about red flags, payment demands, company links, or safety guidance!` 
+          }
         ]);
       } catch (err: any) {
         setError(err.message || 'Error loading report.');

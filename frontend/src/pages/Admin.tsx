@@ -22,6 +22,10 @@ interface CommunityReport {
   upvotes: number;
   downvotes: number;
   created_at: string;
+  author_name?: string;
+  ai_verified?: boolean;
+  ai_confidence?: number;
+  ai_summary?: string;
 }
 
 export const AdminPage: React.FC = () => {
@@ -38,13 +42,13 @@ export const AdminPage: React.FC = () => {
     setLoading(true);
     try {
       const [reportsRes, usersRes] = await Promise.all([
-        fetch(`${API_BASE}/api/v1/community/reports`),
+        fetch(`${API_BASE}/api/v1/community/list`),
         fetch(`${API_BASE}/api/v1/auth/admin/users`).catch(() => null)
       ]);
       
       if (reportsRes.ok) {
         const data = await reportsRes.json();
-        setReports(data.reports || []);
+        setReports(Array.isArray(data) ? data : data.reports || []);
       }
 
       if (usersRes && usersRes.ok) {
@@ -88,7 +92,7 @@ export const AdminPage: React.FC = () => {
     const currentUserStored = localStorage.getItem('tf_user');
     if (currentUserStored) {
       const parsedUser = JSON.parse(currentUserStored);
-      if (parsedUser.id === userId || parsedUser.user_id === userId) {
+      if (parsedUser.id === userId || parsedUser.user_id === userId || parsedUser.email === targetUser.email) {
         parsedUser.plan = nextPlan;
         localStorage.setItem('tf_user', JSON.stringify(parsedUser));
         window.location.reload(); // Refresh session immediately
@@ -101,15 +105,41 @@ export const AdminPage: React.FC = () => {
 
   const handleDeleteReport = async (reportId: string) => {
     try {
-      await fetch(`${API_BASE}/api/v1/community/reports/${reportId}`, {
+      const res = await fetch(`${API_BASE}/api/v1/community/reports/${reportId}`, {
         method: 'DELETE'
       });
-    } catch (_) {}
-
-    setReports(prev => prev.filter(r => r.id !== reportId));
-    setActionMsg(`Report removed from Supabase community database.`);
-    setTimeout(() => setActionMsg(''), 4000);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.detail || 'Server returned deletion error');
+      }
+      setReports(prev => prev.filter(r => r.id !== reportId));
+      setActionMsg(`Report permanently removed from Supabase database.`);
+      setTimeout(() => setActionMsg(''), 4000);
+    } catch (err: any) {
+      alert(`Deletion failed: ${err.message || 'Error removing report'}`);
+    }
   };
+
+  const handleDeleteUser = async (userId: string, email: string) => {
+    if (!window.confirm(`Are you sure you want to permanently delete user record "${email}"?`)) {
+      return;
+    }
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/auth/admin/user/${userId}`, {
+        method: 'DELETE'
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.detail || 'Server user delete failed');
+      }
+      setUsers(prev => prev.filter(u => u.id !== userId));
+      setActionMsg(`User record ${email} deleted from Supabase.`);
+      setTimeout(() => setActionMsg(''), 4000);
+    } catch (err: any) {
+      alert(`User delete error: ${err.message}`);
+    }
+  };
+
 
   const filteredUsers = users.filter(u => u.email.toLowerCase().includes(searchTerm.toLowerCase()));
   const filteredReports = reports.filter(r => r.title.toLowerCase().includes(searchTerm.toLowerCase()) || r.category.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -242,17 +272,28 @@ export const AdminPage: React.FC = () => {
                     </td>
                     <td className="p-4 text-gray-400 font-mono">{u.created_at || 'Recent'}</td>
                     <td className="p-4 text-right">
-                      <button
-                        onClick={() => handleTogglePlan(u.id)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ml-auto ${
-                          u.plan === 'pro'
-                            ? 'bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400'
-                            : 'bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400'
-                        }`}
-                      >
-                        <CreditCard className="w-3.5 h-3.5" />
-                        {u.plan === 'pro' ? 'Downgrade to Free' : 'Promote to PRO'}
-                      </button>
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => handleTogglePlan(u.id)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+                            u.plan === 'pro'
+                              ? 'bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400'
+                              : 'bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400'
+                          }`}
+                        >
+                          <CreditCard className="w-3.5 h-3.5" />
+                          {u.plan === 'pro' ? 'Downgrade' : 'Promote PRO'}
+                        </button>
+
+                        <button
+                          onClick={() => handleDeleteUser(u.id, u.email)}
+                          className="px-2.5 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 text-xs font-bold font-mono transition flex items-center gap-1"
+                          title="Delete user record"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Delete</span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -265,33 +306,52 @@ export const AdminPage: React.FC = () => {
         {activeTab === 'reports' && (
           <div className="space-y-3">
             {filteredReports.length === 0 ? (
-              <div className="p-8 text-center glass-card rounded-2xl border border-white/[0.08] text-gray-400 text-xs">
+              <div className="p-8 text-center glass-card rounded-2xl border border-white/[0.08] text-gray-400 text-xs font-mono">
                 No community reports found.
               </div>
             ) : (
               filteredReports.map(report => (
-                <div key={report.id} className="p-4 rounded-2xl glass-card border border-white/[0.08] flex items-start justify-between gap-4">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-blue-500/20 text-blue-400">
-                        {report.category}
+                <div key={report.id} className="p-5 rounded-2xl glass-card border border-white/[0.08] flex items-start justify-between gap-4 shadow-md">
+                  <div className="space-y-2 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-red-950/60 text-red-400 border border-red-900/30">
+                        {report.category.replace('_', ' ')}
                       </span>
-                      <h3 className="text-sm font-bold text-white">{report.title}</h3>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-950/40 text-emerald-400 border border-emerald-500/30">
+                        🤖 AI Verified ({report.ai_confidence || 90}%)
+                      </span>
+                      <span className="text-[10px] text-gray-500 font-mono">
+                        👤 {report.author_name ? `By ${report.author_name}` : 'By Verified Member'}
+                      </span>
                     </div>
-                    <p className="text-xs text-gray-400 line-clamp-2">{report.description}</p>
+
+                    <h3 className="text-sm font-bold text-white">{report.title}</h3>
+                    <p className="text-xs text-gray-300 leading-relaxed">{report.description}</p>
+                    
+                    {report.ai_summary && (
+                      <p className="text-[11px] text-[#00B4D8] bg-[#0A2034]/60 p-2.5 rounded-xl border border-[#0097A7]/20 font-mono">
+                        💡 AI Context: {report.ai_summary}
+                      </p>
+                    )}
+
                     {report.evidence_url && (
-                      <a href={report.evidence_url} target="_blank" rel="noreferrer" className="text-[11px] text-blue-400 hover:underline flex items-center gap-1">
+                      <a href={report.evidence_url} target="_blank" rel="noreferrer" className="text-[11px] text-blue-400 hover:underline flex items-center gap-1 font-mono pt-1">
                         View Attached Evidence <ExternalLink className="w-3 h-3" />
                       </a>
                     )}
                   </div>
 
                   <button
-                    onClick={() => handleDeleteReport(report.id)}
-                    className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 shrink-0 transition"
+                    onClick={() => {
+                      if (window.confirm(`Are you sure you want to remove report "${report.title}" from public community feed?`)) {
+                        handleDeleteReport(report.id);
+                      }
+                    }}
+                    className="px-3 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 shrink-0 transition flex items-center gap-1.5 text-xs font-bold font-mono cursor-pointer"
                     title="Remove from public feed"
                   >
                     <Trash2 className="w-4 h-4" />
+                    <span>Delete</span>
                   </button>
                 </div>
               ))

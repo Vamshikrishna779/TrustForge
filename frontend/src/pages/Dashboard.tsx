@@ -55,14 +55,19 @@ export default function Dashboard({ onSelectReport }: DashboardProps) {
   const handleDeleteScan = async (e: React.MouseEvent, scanId: string) => {
     e.stopPropagation(); // Don't trigger navigation to report details
     try {
-      await fetch(`${API_BASE}/api/v1/scan/report/${scanId}`, {
+      const res = await fetch(`${API_BASE}/api/v1/scan/report/${scanId}`, {
         method: 'DELETE'
       });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.detail || 'Server deletion failed');
+      }
       setHistory(prev => prev.filter(s => s.id !== scanId));
-    } catch (err) {
-      console.error('Failed to delete scan record', err);
+    } catch (err: any) {
+      alert(`Failed to delete scan record: ${err.message || 'Server error'}`);
     }
   };
+
 
   const filteredHistory = history.filter(scan => {
     if (selectedFilter === 'all') return true;

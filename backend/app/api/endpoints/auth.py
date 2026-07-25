@@ -71,9 +71,20 @@ def login(payload: LoginRequest):
             raise HTTPException(status_code=401, detail="Invalid email or password.")
 
         # Get user plan
-        plan_result = sb.table("user_plans").select("plan,plan_expires_at").eq("user_id", str(user.id)).single().execute()
+        plan_result = sb.table("user_plans").select("plan,plan_expires_at,email").eq("user_id", str(user.id)).single().execute()
         plan_data = plan_result.data or {}
         plan = plan_data.get("plan", "free")
+
+        # Save email in user_plans table if missing
+        if not plan_data.get("email"):
+            try:
+                sb.table("user_plans").upsert({
+                    "user_id": str(user.id),
+                    "email": user.email,
+                    "plan": plan
+                }, on_conflict="user_id").execute()
+            except Exception:
+                pass
 
         return {
             "access_token": session.access_token,
@@ -301,4 +312,17 @@ def update_user_plan_admin(payload: AdminUserPlanRequest):
         raise HTTPException(status_code=503, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to update user plan: {str(e)}")
+
+@router.delete("/admin/user/{user_id}")
+def delete_user_admin(user_id: str):
+    """Admin override to delete a user record permanently from Supabase user_plans."""
+    try:
+        sb = get_supabase()
+        res = sb.table("user_plans").delete().eq("user_id", user_id).execute()
+        return {"status": "success", "message": f"User {user_id} deleted permanently."}
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to delete user: {str(e)}")
+
 

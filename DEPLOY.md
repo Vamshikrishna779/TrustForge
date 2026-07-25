@@ -52,10 +52,10 @@
 cd C:\TrustForge\backend
 
 # Install Python 3.11 requirements
-pip install -r requirements.txt
+py -3.11 -m pip install -r requirements.txt
 
 # Start FastAPI dev server
-uvicorn main:app --reload --port 8000
+py -3.11 -m uvicorn main:app --reload --port 8000
 ```
 > **Local API Endpoint**: `http://localhost:8000`  
 > **Local Swagger Docs**: `http://localhost:8000/docs`

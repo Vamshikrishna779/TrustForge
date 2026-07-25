@@ -548,6 +548,9 @@ def get_live_stats(db: Session = Depends(get_db)):
 def delete_scan_report(report_id: str, db: Session = Depends(get_db)):
     """Deletes a scan report record from SQLite database."""
     report = db.query(Report).filter(Report.id == report_id).first()
+    if not report and report_id.isdigit():
+        report = db.query(Report).filter(Report.id == int(report_id)).first()
+
     if not report:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -556,5 +559,6 @@ def delete_scan_report(report_id: str, db: Session = Depends(get_db)):
     db.delete(report)
     db.commit()
     return {"status": "success", "message": f"Scan report {report_id} deleted."}
+
 
 

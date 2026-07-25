@@ -8,6 +8,7 @@ import Auth from './pages/Auth';
 import Settings from './pages/Settings';
 import Profile from './pages/Profile';
 import { AdminPage } from './pages/Admin';
+import { TermsPage } from './pages/Terms';
 import { Sparkles, LayoutDashboard, MessageSquare, KeyRound, LogOut, User, Menu, ShieldAlert, Download, X as CloseIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect, useRef } from 'react';
@@ -166,11 +167,13 @@ function Navbar({ isLoggedIn, user, onLogout }: { isLoggedIn: boolean; user: any
   };
 
   return (
-    <nav ref={navRef} className="border-b border-[#00A4B4]/20 bg-[#04101B]/85 backdrop-blur-md sticky top-0 z-50 transition-all duration-200">
-      <div className="max-w-6xl mx-auto px-4 py-3 sm:py-4">
-        <div className="flex justify-between items-center w-full">
-          <Link to="/" className="flex items-center gap-2 cursor-pointer no-underline" onClick={() => setIsOpen(false)}>
-            <img src="/logo.png" alt="TrustForge Logo" className="w-8 h-8 object-contain" />
+    <nav ref={navRef} className="border-b border-[#00A4B4]/20 bg-[#04101B]/90 backdrop-blur-xl sticky top-0 z-50 transition-all duration-200">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
+        <div className="flex items-center justify-between gap-4">
+          <Link to="/" className="flex items-center gap-2.5 cursor-pointer no-underline shrink-0" onClick={() => setIsOpen(false)}>
+            <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center bg-[#0097A7]/10 border border-[#00A4B4]/30 shadow-[0_0_12px_rgba(0,164,180,0.25)]">
+              <img src="/logo.png" alt="TrustForge Logo" className="w-10 h-10 object-cover object-top scale-125" />
+            </div>
             <span className="font-heading font-extrabold text-xl tracking-tight text-white">
               Trust<span className="text-[#00A4B4]">Forge</span>
             </span>
@@ -258,6 +261,34 @@ export default function App() {
     return stored ? JSON.parse(stored) : null;
   });
 
+  // Sync profile & plan live from Supabase backend on mount
+  useEffect(() => {
+    const token = localStorage.getItem('tf_token');
+    if (!token) return;
+
+    fetch(`${API_BASE}/api/v1/auth/profile`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => res.ok ? res.json() : null)
+      .then(profile => {
+        if (profile) {
+          setUser((prev: any) => {
+            const updated = {
+              ...prev,
+              id: profile.id || prev?.id,
+              email: profile.email || prev?.email,
+              display_name: profile.display_name || prev?.display_name,
+              plan: profile.plan || prev?.plan || 'free'
+            };
+            localStorage.setItem('tf_user', JSON.stringify(updated));
+            return updated;
+          });
+          setIsLoggedIn(true);
+        }
+      })
+      .catch(err => console.error('Failed to sync user profile:', err));
+  }, []);
+
   const handleScanComplete = (reportId: string) => {
     navigate(`/report/${reportId}`);
   };
@@ -312,6 +343,7 @@ export default function App() {
             }
           />
           <Route path="/community" element={<Community />} />
+          <Route path="/terms" element={<TermsPage />} />
           <Route path="/auth" element={<Auth onLogin={handleLogin} />} />
           <Route
             path="/profile"
