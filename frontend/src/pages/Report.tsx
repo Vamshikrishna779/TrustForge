@@ -39,6 +39,8 @@ interface ReportData {
   analysis_details: {
     verdict: string;
     category?: string;
+    fee_requested?: string;
+    academy_url?: string;
     red_flags: string[];
     evidence?: {
       key: string;
@@ -47,6 +49,7 @@ interface ReportData {
       details: string;
     }[];
   };
+
   recommendations: string[];
   created_at: string;
 }
@@ -339,8 +342,24 @@ export default function Report({ reportId: propReportId, onBack: propOnBack }: R
               </div>
               <div className="flex justify-between gap-2">
                 <span className="text-[#C8C8CC] shrink-0">Category:</span>
-                <span className="text-white font-medium uppercase font-mono">{report.analysis_details.category || 'Document Scan'}</span>
+                <span className="px-2 py-0.5 rounded-[6px] bg-[#2563EB]/15 border border-[#2563EB]/30 text-[#00E5FF] text-[10px] font-bold font-mono uppercase truncate">
+                  {report.analysis_details.category || 'Document Scan'}
+                </span>
               </div>
+              {report.analysis_details.fee_requested && (
+                <div className="flex justify-between gap-2">
+                  <span className="text-[#C8C8CC] shrink-0">Fee Demanded:</span>
+                  <span className="text-red-400 font-bold font-mono">{report.analysis_details.fee_requested}</span>
+                </div>
+              )}
+              {report.analysis_details.academy_url && (
+                <div className="flex justify-between gap-2">
+                  <span className="text-[#C8C8CC] shrink-0">Website URL:</span>
+                  <a href={report.analysis_details.academy_url.startsWith('http') ? report.analysis_details.academy_url : `https://${report.analysis_details.academy_url}`} target="_blank" rel="noreferrer" className="text-[#00E5FF] hover:underline font-mono text-[11px] truncate max-w-[180px]">
+                    {report.analysis_details.academy_url}
+                  </a>
+                </div>
+              )}
               <div className="flex justify-between gap-2">
                 <span className="text-[#C8C8CC] shrink-0">Scan ID:</span>
                 <span className="text-[#C8C8CC] font-mono text-xs max-w-[120px] truncate">{report.id}</span>
@@ -349,6 +368,7 @@ export default function Report({ reportId: propReportId, onBack: propOnBack }: R
                 <span className="text-[#C8C8CC] shrink-0">Checked On:</span>
                 <span className="text-white font-medium">{new Date(report.created_at).toLocaleDateString()}</span>
               </div>
+
             </div>
           </div>
 

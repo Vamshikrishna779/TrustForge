@@ -82,6 +82,7 @@ export default function Landing({ onScanComplete }: LandingProps) {
   const [activeTab, setActiveTab] = useState<ScanTab>('document');
   const [searchVal, setSearchVal] = useState('');
   const [academyUrl, setAcademyUrl] = useState('');
+  const [academyFee, setAcademyFee] = useState('');
   const [academyDetails, setAcademyDetails] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -158,13 +159,12 @@ export default function Landing({ onScanComplete }: LandingProps) {
   const handleUpgradeToPro = () => {
     const token = localStorage.getItem('tf_token');
     if (!token) {
-      // Redirect unauthenticated user to login screen directly
-      window.location.href = '/auth';
+      setErrorMsg('Please sign in first to upgrade to Pro.');
       return;
     }
     setUpgradeLoading(true);
-    setUpgradeMsg('');
     setUpgradeError('');
+    setUpgradeMsg('');
 
     initiateProUpgrade(
       token,
@@ -196,7 +196,12 @@ export default function Landing({ onScanComplete }: LandingProps) {
     else if (activeTab === 'email') { endpoint = `${API_BASE}/api/v1/scan/email`; bodyPayload = { email: searchVal.trim() }; }
     else if (activeTab === 'training') {
       endpoint = `${API_BASE}/api/v1/scan/training-program/scan`;
-      bodyPayload = { academy_name: searchVal.trim(), website_url: academyUrl.trim(), pasted_details: academyDetails.trim() };
+      bodyPayload = {
+        academy_name: searchVal.trim(),
+        website_url: academyUrl.trim(),
+        requested_fee: academyFee.trim(),
+        pasted_details: academyDetails.trim()
+      };
     }
 
     const token = localStorage.getItem('tf_token');
@@ -539,14 +544,20 @@ export default function Landing({ onScanComplete }: LandingProps) {
                           placeholder="e.g. 100% Placement Guarantee Academy"
                           className="w-full px-4 py-3 glass-input rounded-[16px] text-sm text-white placeholder-[#333] focus:outline-none" />
 
-                        <input type="text" value={academyUrl} onChange={(e) => setAcademyUrl(e.target.value)}
-                          placeholder="Website URL (Optional)"
-                          className="w-full px-4 py-3 glass-input rounded-[16px] text-sm text-white placeholder-[#333] focus:outline-none" />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <input type="text" value={academyUrl} onChange={(e) => setAcademyUrl(e.target.value)}
+                            placeholder="Website URL (Optional)"
+                            className="w-full px-4 py-3 glass-input rounded-[16px] text-sm text-white placeholder-[#333] focus:outline-none" />
+                          <input type="text" value={academyFee} onChange={(e) => setAcademyFee(e.target.value)}
+                            placeholder="Upfront Fee Requested (e.g. ₹15,000)"
+                            className="w-full px-4 py-3 glass-input rounded-[16px] text-sm text-white placeholder-[#333] focus:outline-none" />
+                        </div>
                         <textarea rows={3} value={academyDetails} onChange={(e) => setAcademyDetails(e.target.value)}
-                          placeholder="Paste placement guarantee text, registration fee details, offer copy..."
+                          placeholder="Paste placement guarantee text, registration fee details, or agreement copy..."
                           className="w-full px-4 py-3 glass-input rounded-[16px] text-sm text-white placeholder-[#333] focus:outline-none resize-none" />
                         <SubmitBtn loading={loading} text="Scan Training Program" full />
                       </div>
+
                     )}
                   </form>
                 )}

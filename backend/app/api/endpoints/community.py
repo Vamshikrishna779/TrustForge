@@ -290,7 +290,8 @@ def get_quick_scan_threats():
             [
               {
                 "tab": "text",
-                "val": "<Short 4-6 word chip title, e.g. 'Pay ₹500 Laptop Deposit Fee'>",
+                "val": "<Short 4-6 word chip title, e.g. 'Laptop Security Deposit Demand'>",
+
                 "title": "<Clear news alert headline>",
                 "category": "upfront_fee",
                 "ai_confidence": 98,

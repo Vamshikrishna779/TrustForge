@@ -32,6 +32,13 @@ class WebsiteScanRequest(BaseModel):
 class EmailScanRequest(BaseModel):
     email: str
 
+class TrainingProgramScanRequest(BaseModel):
+    academy_name: str
+    website_url: Optional[str] = ""
+    requested_fee: Optional[str] = ""
+    pasted_details: Optional[str] = ""
+
+
 @router.post("/document")
 async def scan_document(
     file: UploadFile = File(...),
@@ -509,8 +516,147 @@ async def scan_email_sender(
         )
 
 
+@router.post("/training-program/scan")
+async def scan_training_program(
+    payload: TrainingProgramScanRequest,
+    authorization: str = Header(default=""),
+    db: Session = Depends(get_db)
+):
+    try:
+        academy_name = payload.academy_name.strip()
+        if not academy_name:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Academy or Training Provider name cannot be empty."
+            )
+
+        url = payload.website_url.strip() if payload.website_url else ""
+        fee = payload.requested_fee.strip() if payload.requested_fee else ""
+        details = payload.pasted_details.strip() if payload.pasted_details else ""
+
+        evidence = []
+        if fee:
+            evidence.append({
+                "key": "upfront_fee_check",
+                "status": "flagged",
+                "title": "Upfront Course/Registration Fee Demanded",
+                "details": f"Program requires upfront payment of {fee} before any job guarantee or training commencement."
+            })
+        if "100%" in details.lower() or "guaranteed placement" in details.lower() or "100% placement" in details.lower():
+            evidence.append({
+                "key": "guarantee_check",
+                "status": "flagged",
+                "title": "Unrealistic 100% Placement Guarantee Claim",
+                "details": "Promising guaranteed job placement without screening is a common high-risk indicator."
+            })
+        if not url:
+            evidence.append({
+                "key": "website_check",
+                "status": "flagged",
+                "title": "No Official Domain Provided",
+                "details": "Academy has no official verified domain link attached to the training offer."
+            })
+
+        if not settings.GEMINI_API_KEY:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Gemini API key is not configured on the server."
+            )
+
+        genai.configure(api_key=settings.GEMINI_API_KEY)
+        final_prompt = f"""
+        Analyze this Training Institute / Academy Placement Program for candidate safety:
+        - Academy Name: {academy_name}
+        - Program Website: {url or "None provided"}
+        - Upfront Fee Requested: {fee or "None specified"}
+        - Agreement / Placement Details: {details or "None provided"}
+
+        Evaluate if this training program is a high-risk placement trap, unaccredited fee scam, or genuine institute.
+        Your response must be in raw, valid JSON format only, matching this structure:
+        {{
+          "trust_score": <int between 0 and 100 where 100 is completely safe and 0 is a critical scam>,
+          "verdict": "<SAFE | LOW_RISK | MEDIUM_RISK | HIGH_RISK | CRITICAL_SCAM>",
+          "category": "<Pick the most accurate label: 'Unaccredited Fee Scam' | 'Placement Guarantee Trap' | 'No-Refund Policy Breach' | 'Verified Training Institute' | 'Suspicious Academy'>",
+          "ai_summary": "<A simple, clear summary under 3 sentences for the candidate>",
+          "red_flags": [
+            "<specific reason>"
+          ],
+          "recommendations": [
+            "<action item for safety>"
+          ]
+        }}
+        Ensure there is no markdown code block surrounding the JSON (no ```json ... ```). Just return raw JSON.
+        """
+
+        text_content = generate_content_with_fallback(final_prompt)
+        if text_content.startswith("```json"):
+            text_content = text_content[7:]
+        if text_content.endswith("```"):
+            text_content = text_content[:-3]
+        analysis = json.loads(text_content.strip())
+
+        raw_context = f"Academy Name: {academy_name}\nWebsite: {url or 'Not provided'}\nRequested Fee: {fee or 'Not specified'}\nAgreement Details: {details or 'Not provided'}"
+
+        report = Report(
+            type="training",
+            input_data=academy_name,
+            trust_score=analysis.get("trust_score", 50),
+            ai_summary=analysis.get("ai_summary", "No summary."),
+            analysis_details={
+                "verdict": analysis.get("verdict", "MEDIUM_RISK"),
+                "category": analysis.get("category", "Training Institute"),
+                "red_flags": analysis.get("red_flags", []),
+                "evidence": evidence,
+                "raw_text": raw_context,
+                "fee_requested": fee,
+                "academy_url": url
+            },
+            recommendations=analysis.get("recommendations", []),
+            is_public=True
+        )
+
+        db.add(report)
+        db.commit()
+        db.refresh(report)
+
+        try_cloud_save(token=authorization, report_data={
+            "type": report.type,
+            "input_data": report.input_data,
+            "trust_score": report.trust_score,
+            "ai_summary": report.ai_summary,
+            "analysis_details": report.analysis_details,
+            "recommendations": report.recommendations
+        })
+
+        return {
+            "id": report.id,
+            "type": report.type,
+            "trust_score": report.trust_score,
+            "ai_summary": report.ai_summary,
+            "analysis_details": report.analysis_details,
+            "recommendations": report.recommendations,
+            "created_at": report.created_at
+        }
+    except ResourceExhausted:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="AI Security Engine is currently experiencing high demand. Please wait a few seconds and retry."
+        )
+    except GoogleAPICallError:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="AI Verification Service temporarily unavailable. Please retry in a few moments."
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Training program verification failed: {str(e)}"
+        )
+
+
 @router.get("/report/{report_id}")
 def get_report(report_id: str, db: Session = Depends(get_db)):
+
     report = db.query(Report).filter(Report.id == report_id).first()
     if not report:
         raise HTTPException(
