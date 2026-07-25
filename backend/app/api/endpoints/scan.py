@@ -162,7 +162,8 @@ async def scan_copied_text(
         {{
           "trust_score": <int between 0 and 100 where 100 is completely safe and 0 is a critical scam>,
           "verdict": "<SAFE | LOW_RISK | MEDIUM_RISK | HIGH_RISK | CRITICAL_SCAM>",
-          "category": "<Pick the most accurate label: 'WhatsApp Job Scam' | 'Telegram Task Scam' | 'Phishing Message' | 'Advance-Fee Trap' | 'Fake Recruiter SMS' | 'Unverified Message'>",
+          "category": "<A precise 2-4 word AI-generated classification badge tailored to this input, e.g. 'Telegram Task Scam', 'Upfront Fee Demand', 'Phishing Message', 'Legitimate Notice'>",
+
           "ai_summary": "<A simple, clear summary under 3 sentences for the user>",
           "red_flags": [
             "<specific reason>"
@@ -308,7 +309,8 @@ async def scan_website_url(
         {{
           "trust_score": <int between 0 and 100 where 100 is completely safe and 0 is a critical scam>,
           "verdict": "<SAFE | LOW_RISK | MEDIUM_RISK | HIGH_RISK | CRITICAL_SCAM>",
-          "category": "<Pick the most accurate label: 'Legitimate Business Site' | 'Job Portal' | 'Phishing Clone' | 'Fake Shopping Site' | 'Crypto/Investment Scam' | 'Malware Distribution Site' | 'Government Impersonation' | 'Brand Replica Site' | 'Unknown/Suspicious Domain'>",
+          "category": "<A precise 2-4 word AI-generated classification badge tailored to this website, e.g. 'Phishing Credential Portal', 'Fake Job Domain', 'Malicious Site', 'Verified Business Portal'>",
+
           "ai_summary": "<A simple, clear summary under 3 sentences for the user>",
           "red_flags": [
             "<specific reason>"
@@ -439,7 +441,8 @@ async def scan_email_sender(
         {{
           "trust_score": <int between 0 and 100 where 100 is completely safe and 0 is a critical scam>,
           "verdict": "<SAFE | LOW_RISK | MEDIUM_RISK | HIGH_RISK | CRITICAL_SCAM>",
-          "category": "<Pick the most accurate label: 'Legitimate Corporate Email' | 'Recruiter Email' | 'Generic Domain Sender' | 'Brand Impersonation' | 'Phishing Contact' | 'Spam Newsletter' | 'Fake KYC/OTP Sender' | 'Government Impersonation' | 'Unknown Sender'>",
+          "category": "<A precise 2-4 word AI-generated classification badge tailored to this email, e.g. 'Free-Mail Impersonation', 'Phishing Recruiter Contact', 'Corporate Domain Email', 'Spam Sender'>",
+
           "ai_summary": "<A simple, clear summary under 3 sentences for the user>",
           "red_flags": [
             "<specific reason>"
@@ -576,7 +579,8 @@ async def scan_training_program(
         {{
           "trust_score": <int between 0 and 100 where 100 is completely safe and 0 is a critical scam>,
           "verdict": "<SAFE | LOW_RISK | MEDIUM_RISK | HIGH_RISK | CRITICAL_SCAM>",
-          "category": "<Pick the most accurate label: 'Unaccredited Fee Scam' | 'Placement Guarantee Trap' | 'No-Refund Policy Breach' | 'Verified Training Institute' | 'Suspicious Academy'>",
+          "category": "<A precise 2-4 word AI-generated classification badge tailored to this academy, e.g. 'Unaccredited Placement Trap', 'Upfront Fee Demand', 'Verified Training Institute', 'No-Refund Breach'>",
+
           "ai_summary": "<A simple, clear summary under 3 sentences for the candidate>",
           "red_flags": [
             "<specific reason>"
