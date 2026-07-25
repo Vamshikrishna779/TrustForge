@@ -62,11 +62,19 @@ export default function Scanner({ onScanComplete }: ScannerProps) {
     const formData = new FormData();
     formData.append('file', selectedFile);
 
+    const token = localStorage.getItem('tf_token');
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     try {
       const response = await fetch(`${API_BASE}/api/v1/scan/document`, {
         method: 'POST',
+        headers,
         body: formData,
       });
+
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));

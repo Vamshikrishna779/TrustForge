@@ -300,10 +300,18 @@ def delete_community_report(report_id: str):
         if (not res or not res.data) and report_id.isdigit():
             res = sb.table("community_reports").delete().eq("id", int(report_id)).execute()
 
+        # Strict check: If 0 rows deleted (e.g. blocked by RLS policy or missing ID)
+        if not res or not res.data:
+            raise HTTPException(
+                status_code=400,
+                detail="Database deletion returned 0 modified rows. Ensure Supabase RLS policy 'Allow public delete access' is enabled."
+            )
+
         return {"status": "success", "message": f"Report {report_id} deleted permanently."}
-    except RuntimeError as e:
-        raise HTTPException(status_code=503, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to delete report: {str(e)}")
+
 
 

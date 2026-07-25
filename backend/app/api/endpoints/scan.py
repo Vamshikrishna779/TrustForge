@@ -1,13 +1,15 @@
 import json
-from fastapi import APIRouter, Depends, UploadFile, File, HTTPException, status
+from fastapi import APIRouter, Depends, UploadFile, File, HTTPException, status, Header
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from app.core.database import get_db
 from app.models.report import Report
 from app.services.gemini import analyze_document, SYSTEM_PROMPT_TEMPLATE, settings, generate_content_with_fallback
 from app.services.heuristics import scan_text_for_evidence, check_domain_age, verify_email_sender
+from app.services.cloud_sync import try_cloud_save
 import google.generativeai as genai
 from google.api_core.exceptions import ResourceExhausted, GoogleAPICallError
+
 
 router = APIRouter()
 
@@ -33,6 +35,7 @@ class EmailScanRequest(BaseModel):
 @router.post("/document")
 async def scan_document(
     file: UploadFile = File(...),
+    authorization: str = Header(default=""),
     db: Session = Depends(get_db)
 ):
     mime_type = file.content_type
@@ -68,6 +71,16 @@ async def scan_document(
         db.add(report)
         db.commit()
         db.refresh(report)
+
+        # Dual-save to Supabase for Pro users
+        try_cloud_save(token=authorization, report_data={
+            "type": report.type,
+            "input_data": report.input_data,
+            "trust_score": report.trust_score,
+            "ai_summary": report.ai_summary,
+            "analysis_details": report.analysis_details,
+            "recommendations": report.recommendations
+        })
 
         return {
             "id": report.id,
@@ -108,6 +121,7 @@ async def scan_job_offer(
 @router.post("/text")
 async def scan_copied_text(
     payload: TextScanRequest,
+    authorization: str = Header(default=""),
     db: Session = Depends(get_db)
 ):
     try:
@@ -118,7 +132,6 @@ async def scan_copied_text(
                 detail="Text content cannot be empty."
             )
 
-        # Run deterministic Rule Engine to feed evidence to the AI prompt
         evidence = scan_text_for_evidence(raw_text)
 
         if not settings.GEMINI_API_KEY:
@@ -128,10 +141,30 @@ async def scan_copied_text(
             )
 
         genai.configure(api_key=settings.GEMINI_API_KEY)
-        final_prompt = SYSTEM_PROMPT_TEMPLATE.format(
-            document_text=raw_text,
-            evidence_json=json.dumps(evidence, indent=2)
-        )
+        final_prompt = f"""
+        Analyze this suspicious text or message:
+        ---
+        {raw_text}
+        ---
+
+        Deterministic Evidence: {json.dumps(evidence)}
+
+        Evaluate if this text is a job offer scam, phishing attempt, advance-fee fraud, or suspicious message.
+        Your response must be in raw, valid JSON format only, matching this structure:
+        {{
+          "trust_score": <int between 0 and 100 where 100 is completely safe and 0 is a critical scam>,
+          "verdict": "<SAFE | LOW_RISK | MEDIUM_RISK | HIGH_RISK | CRITICAL_SCAM>",
+          "category": "<Pick the most accurate label: 'WhatsApp Job Scam' | 'Telegram Task Scam' | 'Phishing Message' | 'Advance-Fee Trap' | 'Fake Recruiter SMS' | 'Unverified Message'>",
+          "ai_summary": "<A simple, clear summary under 3 sentences for the user>",
+          "red_flags": [
+            "<specific reason>"
+          ],
+          "recommendations": [
+            "<action item>"
+          ]
+        }}
+        Ensure there is no markdown code block surrounding the JSON (no ```json ... ```). Just return the raw JSON string.
+        """
         
         # Uses fallbacks sequentially (1.5-flash -> flash-latest -> 2.0-flash)
         text_content = generate_content_with_fallback(final_prompt)
@@ -162,6 +195,16 @@ async def scan_copied_text(
         db.commit()
         db.refresh(report)
 
+        # Dual-save to Supabase for Pro users
+        try_cloud_save(token=authorization, report_data={
+            "type": report.type,
+            "input_data": report.input_data,
+            "trust_score": report.trust_score,
+            "ai_summary": report.ai_summary,
+            "analysis_details": report.analysis_details,
+            "recommendations": report.recommendations
+        })
+
         return {
             "id": report.id,
             "type": report.type,
@@ -190,6 +233,7 @@ async def scan_copied_text(
 @router.post("/website")
 async def scan_website_url(
     payload: WebsiteScanRequest,
+    authorization: str = Header(default=""),
     db: Session = Depends(get_db)
 ):
     try:
@@ -296,6 +340,16 @@ async def scan_website_url(
         db.commit()
         db.refresh(report)
 
+        # Dual-save to Supabase for Pro users
+        try_cloud_save(token=authorization, report_data={
+            "type": report.type,
+            "input_data": report.input_data,
+            "trust_score": report.trust_score,
+            "ai_summary": report.ai_summary,
+            "analysis_details": report.analysis_details,
+            "recommendations": report.recommendations
+        })
+
         return {
             "id": report.id,
             "type": report.type,
@@ -324,6 +378,7 @@ async def scan_website_url(
 @router.post("/email")
 async def scan_email_sender(
     payload: EmailScanRequest,
+    authorization: str = Header(default=""),
     db: Session = Depends(get_db)
 ):
     try:
@@ -416,6 +471,16 @@ async def scan_email_sender(
         db.commit()
         db.refresh(report)
 
+        # Dual-save to Supabase for Pro users
+        try_cloud_save(token=authorization, report_data={
+            "type": report.type,
+            "input_data": report.input_data,
+            "trust_score": report.trust_score,
+            "ai_summary": report.ai_summary,
+            "analysis_details": report.analysis_details,
+            "recommendations": report.recommendations
+        })
+
         return {
             "id": report.id,
             "type": report.type,
@@ -501,8 +566,55 @@ async def chat_with_report_analyst(
         )
 
 @router.get("/history")
-def get_scan_history(db: Session = Depends(get_db)):
-    return db.query(Report).order_by(Report.created_at.desc()).all()
+def get_scan_history(authorization: str = Header(default=""), db: Session = Depends(get_db)):
+    local_reports = db.query(Report).order_by(Report.created_at.desc()).all()
+    token = authorization.replace("Bearer ", "").strip() if authorization else ""
+    
+    if token:
+        try:
+            from app.services.supabase_client import get_supabase
+            sb = get_supabase()
+            user_result = sb.auth.get_user(token)
+            if user_result and user_result.user:
+                u_id = str(user_result.user.id)
+                cloud_res = (
+                    sb.table("cloud_scan_reports")
+                    .select("*")
+                    .eq("user_id", u_id)
+                    .order("created_at", desc=True)
+                    .limit(100)
+                    .execute()
+                )
+                if cloud_res and cloud_res.data:
+                    combined_map = {}
+                    for r in local_reports:
+                        combined_map[str(r.id)] = {
+                            "id": str(r.id),
+                            "type": r.type,
+                            "input_data": r.input_data,
+                            "trust_score": r.trust_score,
+                            "ai_summary": r.ai_summary,
+                            "analysis_details": r.analysis_details,
+                            "recommendations": r.recommendations,
+                            "created_at": r.created_at
+                        }
+                    for cr in cloud_res.data:
+                        combined_map[str(cr["id"])] = {
+                            "id": str(cr["id"]),
+                            "type": cr.get("type", "unknown"),
+                            "input_data": cr.get("input_data", ""),
+                            "trust_score": cr.get("trust_score", 50),
+                            "ai_summary": cr.get("ai_summary", ""),
+                            "analysis_details": cr.get("analysis_details", {}),
+                            "recommendations": cr.get("recommendations", []),
+                            "created_at": cr.get("created_at")
+                        }
+                    return list(combined_map.values())
+        except Exception:
+            pass
+
+    return local_reports
+
 
 @router.get("/stats")
 def get_live_stats(db: Session = Depends(get_db)):
@@ -546,7 +658,7 @@ def get_live_stats(db: Session = Depends(get_db)):
 
 @router.delete("/report/{report_id}")
 def delete_scan_report(report_id: str, db: Session = Depends(get_db)):
-    """Deletes a scan report record from SQLite database."""
+    """Deletes a scan report record from SQLite database and Supabase cloud history."""
     report = db.query(Report).filter(Report.id == report_id).first()
     if not report and report_id.isdigit():
         report = db.query(Report).filter(Report.id == int(report_id)).first()
@@ -556,9 +668,21 @@ def delete_scan_report(report_id: str, db: Session = Depends(get_db)):
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Scan report not found."
         )
+
+    # Delete from local SQLite
     db.delete(report)
     db.commit()
+
+    # Attempt to delete from Supabase cloud_scan_reports if user is Pro
+    try:
+        from app.services.supabase_client import get_supabase
+        sb = get_supabase()
+        sb.table("cloud_scan_reports").delete().eq("id", report_id).execute()
+    except Exception:
+        pass
+
     return {"status": "success", "message": f"Scan report {report_id} deleted."}
+
 
 
 

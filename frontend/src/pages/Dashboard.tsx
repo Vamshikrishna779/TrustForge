@@ -35,7 +35,12 @@ export default function Dashboard({ onSelectReport }: DashboardProps) {
   const fetchHistory = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE}/api/v1/scan/history`);
+      const token = localStorage.getItem('tf_token');
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      const response = await fetch(`${API_BASE}/api/v1/scan/history`, { headers });
       if (!response.ok) {
         throw new Error('Failed to load scan history.');
       }
@@ -47,6 +52,7 @@ export default function Dashboard({ onSelectReport }: DashboardProps) {
       setLoading(false);
     }
   };
+
 
   useEffect(() => {
     fetchHistory();
