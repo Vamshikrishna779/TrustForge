@@ -525,35 +525,13 @@ def send_admin_notification(payload: AdminNotificationRequest):
                 "user_email": target.get("user_email") or "",
                 "title": payload.title,
                 "message": payload.message,
-                "category": payload.category,
-                "is_read": False
-            })
-
-        sb.table("user_notifications").insert(notifications_data).execute()
-        return {"status": "success", "message": f"Notification sent to {len(notifications_data)} recipient(s)."}
-    except Exception as e:
-        print("Failed to send notification via Supabase:", e)
-        return {"status": "success", "message": "Notification dispatched."}
-
-@router.get("/admin/logs")
-def get_admin_logs():
-    """Returns history of all dispatched admin notifications and activity logs."""
-    try:
-        sb = get_supabase()
-        res = sb.table("user_notifications").select("*").order("created_at", desc=True).limit(100).execute()
-        return res.data or []
-    except Exception as e:
-        print("Failed to fetch admin logs:", e)
-        return []
-
-
-@router.get("/notifications")
-def get_user_notifications(authorization: str = Header(default=""), user_id: str = ""):
+ @router.get("/notifications")
+def get_user_notifications(authorization: str = Header(default=""), user_id: str = "", email: str = ""):
     """Returns active in-app notifications for the authenticated user."""
     try:
         sb = get_supabase()
-        u_id = ""
-        u_email = ""
+        u_id = user_id.strip()
+        u_email = email.strip().lower()
 
         token = authorization.replace("Bearer ", "").strip() if authorization else ""
         if token:
@@ -561,18 +539,15 @@ def get_user_notifications(authorization: str = Header(default=""), user_id: str
                 user_res = sb.auth.get_user(token)
                 if user_res and user_res.user:
                     u_id = str(user_res.user.id)
-                    u_email = (user_res.user.email or "").strip().lower()
+                    u_email = (user_res.user.email or u_email).strip().lower()
             except Exception:
                 pass
-
-        if not u_id:
-            u_id = user_id
 
         if not u_id and not u_email:
             return {"notifications": [], "unread_count": 0}
 
         # Fetch recent notifications and filter in Python for 100% reliability
-        res = sb.table("user_notifications").select("*").order("created_at", desc=True).limit(50).execute()
+        res = sb.table("user_notifications").select("*").order("created_at", desc=True).limit(100).execute()
         raw_list = res.data or []
 
         is_admin_user = u_email == "vamshikrishna9608@gmail.com"
@@ -583,21 +558,26 @@ def get_user_notifications(authorization: str = Header(default=""), user_id: str
             nemail = str(n.get("user_email", "")).strip().lower()
             ncat = str(n.get("category", "")).strip()
             
-            # Match by user_id, user_email, broadcast ('all'/'global'), or admin alerts for admin account
-            if (
-                nid in (u_id, "all", "global") 
-                or (u_email and nemail == u_email)
-                or (is_admin_user and (nid == "admin_alert" or ncat == "admin_alert"))
-            ):
+            is_match = False
+            if u_id and (nid == u_id or nid == u_email):
+                is_match = True
+            elif u_email and (nemail == u_email or nid == u_email):
+                is_match = True
+            elif nid in ("all", "global"):
+                is_match = True
+            elif is_admin_user and (nid == "admin_alert" or ncat == "admin_alert"):
+                is_match = True
+
+            if is_match:
                 data.append(n)
 
         unread_count = sum(1 for n in data if not n.get("is_read"))
-
 
         return {"notifications": data, "unread_count": unread_count}
     except Exception as e:
         print("Error fetching notifications:", e)
         return {"notifications": [], "unread_count": 0}
+
 
 
 @router.patch("/notifications/{notification_id}/read")

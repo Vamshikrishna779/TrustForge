@@ -24,17 +24,19 @@ export const NotificationCenter: React.FC = () => {
       const token = localStorage.getItem('tf_token');
       const storedUser = localStorage.getItem('tf_user');
       let userId = '';
+      let userEmail = '';
       if (storedUser) {
         try {
           const parsed = JSON.parse(storedUser);
           userId = parsed.id || parsed.user_id || '';
+          userEmail = parsed.email || '';
         } catch (e) {}
       }
 
       const headers: Record<string, string> = {};
       if (token) headers['Authorization'] = `Bearer ${token}`;
 
-      const res = await fetch(`${API_BASE}/api/v1/auth/notifications?user_id=${userId}`, { headers });
+      const res = await fetch(`${API_BASE}/api/v1/auth/notifications?user_id=${userId}&email=${encodeURIComponent(userEmail)}`, { headers });
       if (res.ok) {
         const data = await res.json();
         setNotifications(data.notifications || []);
@@ -44,6 +46,7 @@ export const NotificationCenter: React.FC = () => {
       console.warn("Could not load notifications:", err);
     }
   };
+
 
   useEffect(() => {
     fetchNotifications();
