@@ -171,14 +171,27 @@ function Navbar({ isLoggedIn, user }: { isLoggedIn: boolean; user: any; onLogout
             </span>
           </Link>
 
-          {/* Hamburger toggle button */}
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="sm:hidden p-2 text-[#C8C8CC] hover:text-white focus:outline-none"
-            aria-label="Toggle Navigation"
-          >
-            {isOpen ? <CloseIcon className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
+          {/* Mobile Right Actions */}
+          <div className="flex items-center gap-2 sm:hidden">
+            {!isLoggedIn && (
+              <Link
+                to="/auth"
+                onClick={() => setIsOpen(false)}
+                className="px-3 py-1.5 rounded-[10px] bg-gradient-to-r from-[#002855] to-[#0097A7] text-white text-xs font-bold font-mono border border-[#00A4B4]/40 flex items-center gap-1 shadow-md"
+              >
+                <KeyRound className="w-3 h-3 text-[#00E5FF]" />
+                <span>Sign In</span>
+              </Link>
+            )}
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="p-2 text-[#C8C8CC] hover:text-white focus:outline-none"
+              aria-label="Toggle Navigation"
+            >
+              {isOpen ? <CloseIcon className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
+
 
           {/* Desktop navigation */}
           <div className="hidden sm:flex items-center gap-2">
