@@ -43,13 +43,10 @@ CREATE TABLE IF NOT EXISTS user_plans (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Ensure additional columns exist if table was previously created
+-- Ensure Razorpay columns exist if table was previously created
 ALTER TABLE user_plans
-  ADD COLUMN IF NOT EXISTS email TEXT,
-  ADD COLUMN IF NOT EXISTS display_name TEXT,
   ADD COLUMN IF NOT EXISTS razorpay_payment_id TEXT,
   ADD COLUMN IF NOT EXISTS razorpay_order_id TEXT;
-
 
 -- Enable RLS for user_plans
 ALTER TABLE user_plans ENABLE ROW LEVEL SECURITY;
@@ -84,26 +81,7 @@ DROP POLICY IF EXISTS "Allow public full CRUD access to cloud reports" ON cloud_
 CREATE POLICY "Allow public full CRUD access to cloud reports" ON cloud_scan_reports FOR ALL USING (true) WITH CHECK (true);
 
 
--- 4. USER NOTIFICATIONS TABLE (Admin Notifications & In-App Alerts)
-CREATE TABLE IF NOT EXISTS user_notifications (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  user_email TEXT,
-  title TEXT NOT NULL,
-  message TEXT NOT NULL,
-  category TEXT DEFAULT 'admin_alert',
-  is_read BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Enable RLS for user_notifications
-ALTER TABLE user_notifications ENABLE ROW LEVEL SECURITY;
-
-DROP POLICY IF EXISTS "Allow public full CRUD access to notifications" ON user_notifications;
-CREATE POLICY "Allow public full CRUD access to notifications" ON user_notifications FOR ALL USING (true) WITH CHECK (true);
-
-
--- 5. SAFE REALTIME ENABLING FOR ALL TABLES (No duplicate errors)
+-- 4. SAFE REALTIME ENABLING FOR ALL TABLES (No duplicate errors)
 DO $$
 BEGIN
   BEGIN
@@ -120,7 +98,36 @@ BEGIN
     ALTER PUBLICATION supabase_realtime ADD TABLE cloud_scan_reports;
   EXCEPTION WHEN OTHERS THEN NULL;
   END;
+END $$;
 
+
+ALTER TABLE user_plans
+  ADD COLUMN IF NOT EXISTS email TEXT,
+  ADD COLUMN IF NOT EXISTS display_name TEXT;
+
+
+-- ===============================================================
+-- CREATE USER NOTIFICATIONS TABLE & ENABLE REALTIME
+-- ===============================================================
+CREATE TABLE IF NOT EXISTS user_notifications (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  user_email TEXT,
+  title TEXT NOT NULL,
+  message TEXT NOT NULL,
+  category TEXT DEFAULT 'admin_alert',
+  is_read BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Enable RLS & Full Public Access
+ALTER TABLE user_notifications ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow public full CRUD access to notifications" ON user_notifications;
+CREATE POLICY "Allow public full CRUD access to notifications" ON user_notifications FOR ALL USING (true) WITH CHECK (true);
+
+-- Enable Supabase Realtime Publication for Notifications
+DO $$
+BEGIN
   BEGIN
     ALTER PUBLICATION supabase_realtime ADD TABLE user_notifications;
   EXCEPTION WHEN OTHERS THEN NULL;
