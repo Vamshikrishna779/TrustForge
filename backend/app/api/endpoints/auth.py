@@ -88,12 +88,19 @@ def login(payload: LoginRequest):
         plan = "free"
         plan_expires = None
         try:
-            plan_result = sb.table("user_plans").select("plan,plan_expires_at").eq("user_id", str(user.id)).single().execute()
-            if plan_result and plan_result.data:
-                plan = plan_result.data.get("plan", "free")
-                plan_expires = plan_result.data.get("plan_expires_at")
+            plan_result = sb.table("user_plans").select("plan,plan_expires_at").eq("user_id", str(user.id)).execute()
+            if plan_result and plan_result.data and len(plan_result.data) > 0:
+                p_data = plan_result.data[0]
+                plan = p_data.get("plan", "free")
+                plan_expires = p_data.get("plan_expires_at")
+            else:
+                sb.table("user_plans").upsert({"user_id": str(user.id), "plan": "free"}, on_conflict="user_id").execute()
         except Exception:
-            pass
+            try:
+                sb.table("user_plans").upsert({"user_id": str(user.id), "plan": "free"}, on_conflict="user_id").execute()
+            except Exception:
+                pass
+
 
         return {
             "access_token": session.access_token,
