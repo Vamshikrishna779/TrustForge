@@ -16,7 +16,9 @@ export const NotificationCenter: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
 
 
   const fetchNotifications = async () => {
@@ -181,36 +183,48 @@ export const NotificationCenter: React.FC = () => {
                   <p className="text-[11px] text-gray-500 font-mono">No active notifications or alerts.</p>
                 </div>
               ) : (
-                notifications.map(item => (
-                  <div
-                    key={item.id}
-                    onClick={() => markAsRead(item.id)}
-                    className={`p-3.5 transition flex items-start gap-3 cursor-pointer ${
-                      item.is_read ? 'bg-transparent opacity-60 hover:opacity-100' : 'bg-[#0097A7]/10 hover:bg-[#0097A7]/20 border-l-2 border-[#00E5FF]'
-                    }`}
-                  >
-                    <div className="p-2 rounded-xl bg-white/[0.06] border border-white/[0.08] shrink-0 mt-0.5">
-                      {getCategoryIcon(item.category)}
-                    </div>
-
-                    <div className="space-y-1 flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="text-xs font-bold text-white truncate">{item.title}</p>
-                        <span className="text-[9px] font-mono text-gray-400 shrink-0">{formatTime(item.created_at)}</span>
+                notifications.map(item => {
+                  const isExpanded = expandedId === item.id;
+                  return (
+                    <div
+                      key={item.id}
+                      onClick={() => {
+                        markAsRead(item.id);
+                        setExpandedId(prev => prev === item.id ? null : item.id);
+                      }}
+                      className={`p-3.5 transition flex items-start gap-3 cursor-pointer ${
+                        item.is_read ? 'bg-transparent opacity-75 hover:opacity-100' : 'bg-[#0097A7]/10 hover:bg-[#0097A7]/20 border-l-2 border-[#00E5FF]'
+                      }`}
+                    >
+                      <div className="p-2 rounded-xl bg-white/[0.06] border border-white/[0.08] shrink-0 mt-0.5">
+                        {getCategoryIcon(item.category)}
                       </div>
 
-                      <p className="text-[11px] text-gray-300 leading-relaxed font-normal">{item.message}</p>
-                    </div>
+                      <div className="space-y-1 flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-xs font-bold text-white truncate">{item.title}</p>
+                          <span className="text-[9px] font-mono text-cyan-400 shrink-0 font-bold">{formatTime(item.created_at)}</span>
+                        </div>
 
-                    <button
-                      onClick={e => deleteNotification(e, item.id)}
-                      className="p-1 text-gray-500 hover:text-red-400 transition cursor-pointer shrink-0"
-                      title="Dismiss notification"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                ))
+                        <p className={`text-[11px] text-gray-300 leading-relaxed font-normal ${isExpanded ? 'whitespace-pre-wrap' : 'line-clamp-2'}`}>
+                          {item.message}
+                        </p>
+
+                        {!isExpanded && item.message.length > 70 && (
+                          <span className="text-[9px] text-[#00E5FF] font-mono font-bold block pt-0.5">Click to view full message ➔</span>
+                        )}
+                      </div>
+
+                      <button
+                        onClick={e => deleteNotification(e, item.id)}
+                        className="p-1 text-gray-500 hover:text-red-400 transition cursor-pointer shrink-0"
+                        title="Dismiss notification"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  );
+                })
               )}
             </div>
           </motion.div>

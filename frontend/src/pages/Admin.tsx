@@ -604,10 +604,17 @@ export const AdminPage: React.FC = () => {
                       <div className="text-gray-400 text-[11px] font-mono truncate">{log.message}</div>
                     </td>
                     <td className="p-4 text-right">
-                      <span className="inline-flex items-center gap-1 text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/30 font-bold">
-                        <CheckCheck className="w-3 h-3" /> Delivered 🔔
-                      </span>
+                      {log.is_read ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-mono text-cyan-400 bg-cyan-500/10 px-2.5 py-1 rounded-full border border-cyan-500/30 font-bold">
+                          <CheckCheck className="w-3 h-3 text-cyan-400" /> Read ✅
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-mono text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/30 font-bold">
+                          <Send className="w-3 h-3 text-amber-400" /> Delivered 🔔
+                        </span>
+                      )}
                     </td>
+
                   </tr>
                 ))
               )}
