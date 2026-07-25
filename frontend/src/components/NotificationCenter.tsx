@@ -47,9 +47,10 @@ export const NotificationCenter: React.FC = () => {
 
   useEffect(() => {
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 12000);
+    const interval = setInterval(fetchNotifications, 3000);
     return () => clearInterval(interval);
   }, []);
+
 
   // Close dropdown on outside click
   useEffect(() => {

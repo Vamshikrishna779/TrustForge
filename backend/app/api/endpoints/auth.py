@@ -514,7 +514,7 @@ def get_user_notifications(authorization: str = Header(default=""), user_id: str
                 user_res = sb.auth.get_user(token)
                 if user_res and user_res.user:
                     u_id = str(user_res.user.id)
-                    u_email = user_res.user.email or ""
+                    u_email = (user_res.user.email or "").strip().lower()
             except Exception:
                 pass
 
@@ -524,26 +524,26 @@ def get_user_notifications(authorization: str = Header(default=""), user_id: str
         if not u_id and not u_email:
             return {"notifications": [], "unread_count": 0}
 
-        query_cond = f"user_id.eq.{u_id},user_id.eq.all,user_id.eq.global"
-        if u_email:
-            query_cond += f",user_email.eq.{u_email}"
+        # Fetch recent notifications and filter in Python for 100% reliability
+        res = sb.table("user_notifications").select("*").order("created_at", desc=True).limit(50).execute()
+        raw_list = res.data or []
 
-        res = (
-            sb.table("user_notifications")
-            .select("*")
-            .or_(query_cond)
-            .order("created_at", desc=True)
-            .limit(50)
-            .execute()
-        )
+        data = []
+        for n in raw_list:
+            nid = str(n.get("user_id", "")).strip()
+            nemail = str(n.get("user_email", "")).strip().lower()
+            
+            # Match by user_id, user_email, or broadcast ('all'/'global')
+            if nid in (u_id, "all", "global") or (u_email and nemail == u_email):
+                data.append(n)
 
-        data = res.data or []
         unread_count = sum(1 for n in data if not n.get("is_read"))
 
         return {"notifications": data, "unread_count": unread_count}
     except Exception as e:
         print("Error fetching notifications:", e)
         return {"notifications": [], "unread_count": 0}
+
 
 @router.patch("/notifications/{notification_id}/read")
 def mark_notification_as_read(notification_id: str):
